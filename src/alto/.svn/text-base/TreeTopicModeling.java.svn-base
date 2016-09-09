@@ -1,0 +1,872 @@
+package itm;
+
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Scanner;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+
+import cc.mallet.topics.tui.Vectors2TreeTopics;
+import cc.mallet.topics.tui.GenerateVocab;
+import cc.mallet.topics.tui.GenerateTree;
+import util.Util;
+
+public class TreeTopicModeling {
+	
+	String baseDir;
+	int wordsNumPerTopic;
+	int docsNumPerTopic;
+	int round;
+	
+	String inputDir;
+	String preoutputDir;
+	String outputDir;
+	String inputData;
+	String outputName;
+	String vocabFile;
+	String removedFile;
+	String consFile;
+	String treeFile;
+	String treeHyper;
+	String urlFile;
+	String keepFile;
+	
+	int topicsNum;
+	int step;
+	int iterNum;
+	double alpha;
+	int randomSeed;
+	int outputInterval;
+	String forgetTopics;
+	int docLen;
+
+	ArrayList<String> vocab;
+	
+	public TreeTopicModeling (String corpus, String topicsNum, String session, String round) {
+				
+		this.baseDir = util.Constants.RESULT_BASE_DIR;
+		
+		this.round = Integer.parseInt(round);
+		
+		this.inputDir = baseDir + corpus + "/input";
+		String topicDir = baseDir + corpus + "/output/T" + topicsNum;
+		String sessionDir = topicDir + "/s"+ session;
+		if (this.round == 0) {
+			this.outputDir = topicDir + "/init";
+			this.preoutputDir = "";
+		} else if (this.round == 1) {
+			this.outputDir = sessionDir+ "/r" + round;
+			this.preoutputDir = topicDir + "/init";
+		} else {
+			this.outputDir = sessionDir + "/r" + round;
+			this.preoutputDir = sessionDir + "/r" + (this.round - 1);	
+		}
+		try {
+			Util.creatDir(topicDir);
+			Util.creatDir(sessionDir);
+			Util.creatDir(this.outputDir);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		this.topicsNum = Integer.parseInt(topicsNum);
+		this.inputData = inputDir + "/" + corpus + "-topic-input.mallet";
+		this.treeHyper = inputDir + "/tree_hyperparams";
+		this.vocabFile = inputDir + "/" + corpus + ".voc";
+		this.urlFile = inputDir + "/" + corpus + ".url";
+		
+		this.outputName = this.outputDir + "/model";
+		this.removedFile = this.outputDir + "/removed";
+		this.consFile = this.outputDir + "/constraint.all";
+		this.keepFile = this.outputDir + "/important.keep";
+		this.treeFile = this.outputDir + "/" + corpus + ".wn";
+		
+		this.vocab = new ArrayList<String> ();
+		
+		this.wordsNumPerTopic = util.Constants.TOPIC_WORD_NUM;
+		this.docsNumPerTopic = util.Constants.TOPIC_DOC_NUM;
+		this.step = util.Constants.STEP_ITERATION;
+		this.iterNum = util.Constants.INITIAL_ITERATION + this.step * this.round;
+		this.alpha = 0.1;
+		this.randomSeed = 0;
+		this.outputInterval = this.step;
+		this.forgetTopics = "doc";
+		this.docLen = util.Constants.TOPIC_DOC_LENGTH;
+	}
+	
+	public class DocProb implements Comparable {
+		int wi;
+		double p;
+		int len;
+		public DocProb (int wi, double p, int len) { this.wi = wi; this.p = p; this.len = len;}
+		public final int compareTo (Object o2) {
+			if (p > ((DocProb)o2).p)
+				return -1;
+			else if (p == ((DocProb)o2).p)
+				return 0;
+			else return 1;
+		}
+	}
+	
+
+		
+	public void genVocab() {
+		System.out.println("Generating vocab!");
+		if(this.checkExist(this.vocabFile)){
+			return;
+		}
+		
+		//Generating vocab file
+		String[] vocab_params = {
+				"--input", this.inputData,
+		 	 	"--tfidf-thresh", "0",
+		 	 	"--freq-thresh", "1",
+		 	 	"--word-length", "3",
+		 	 	"--tfidf-rank", "true",
+		 	 	"--vocab", this.vocabFile};
+		try {
+			GenerateVocab.main(vocab_params);
+		} catch (Exception e) {
+			System.err.println("Error: " + e.getMessage());
+		}
+	}
+	
+	public void logTest() {
+		try{
+            String outputfile = "/fs/clip-iopener/users/ynhu/results/evaluation/testlog.txt";
+    		PrintStream out = new PrintStream (outputfile);
+    		out.print("hello\n");
+    		out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void genTree(){
+		System.out.println("Generating tree!");
+		//if(this.round == 0) {
+		if(this.checkExist(treeFile + ".0") && this.checkExist(treeFile + ".1")){
+			return;
+		}
+		//}
+		//Generating tree file
+		String[] tree_params = {
+		 	 	"--vocab", this.vocabFile,
+		 	 	"--constraint", this.consFile,
+		 	 	"--merge-constraints", "true",
+		 	 	"--tree", this.treeFile};
+		
+		try {
+			GenerateTree.main(tree_params);
+		} catch (Exception e) {
+			System.err.println("Error: " + e.getMessage());
+		}
+	}
+	
+	private boolean checkExist (String filename) {
+		File file = new File(filename);
+		if (file.exists()) {
+			System.out.println(filename + " exists!");
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public void trainTopics() {
+		System.out.println("Training topics!");
+		//if(this.round == 0) {
+		if (this.checkExist(this.outputDir + "/model.topics") 
+				&& this.checkExist(this.outputDir + "/model.docs")
+				&& this.checkExist(this.outputDir + "/model.lhood")
+				&& this.checkExist(this.outputDir + "/model.states")) {
+			System.out.println("Topic model exist!");
+			return;
+		}
+		//}
+		
+		String[] train_params = {
+		"--input", this.inputData,
+ 	 	"--output-interval", "" + this.outputInterval,
+ 	 	"--output-dir", this.outputName,
+ 	 	"--tree", this.treeFile,
+ 	 	"--tree-hyperparameters", this.treeHyper,
+ 	 	"--vocab", this.vocabFile,
+ 	 	"--alpha", "" + this.alpha,
+ 	 	"--num-topics", "" + this.topicsNum,
+ 	 	"--num-iterations", "" + this.iterNum,
+ 	 	"--num-top-words", "" + 100,
+ 	 	"--random-seed", "" + this.randomSeed,
+ 	 	"--resume", "False",
+ 	 	"--resume-dir", this.preoutputDir + "/model", 	 	
+ 	 	"--remove-words", this.removedFile,
+ 	 	"--forget-topics", this.forgetTopics,
+ 	 	"--constraint", this.consFile,
+ 	 	"--keep", this.keepFile };
+		
+		if (this.round > 0) {
+			int index = train_params.length - 11;
+			train_params[index] = "True";
+			System.out.println(train_params[index-1] + " " + train_params[index]);
+		}
+		
+		try {
+			// mallet topic training
+			Vectors2TreeTopics.main(train_params);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void rankDocs_old(ArrayList<String> fileList, HashMap<Integer, DocProb[]> topicDocsRanked) {
+		
+		HashMap<Integer, ArrayList<DocProb>> topicDocs = new HashMap<Integer, ArrayList<DocProb>> ();
+		
+		try{
+			String inputfile = this.outputName + ".docs";
+			FileInputStream fstream = new FileInputStream(inputfile);
+			DataInputStream dstream = new DataInputStream(fstream);
+			BufferedReader breader = new BufferedReader(new InputStreamReader(dstream));
+	
+			String strLine;// = brLHood.readLine();
+			while ((strLine = breader.readLine()) != null) {
+				strLine = strLine.trim();
+				String[] str = strLine.split("\t");
+				// id, doc, prob
+				int id = Integer.parseInt(str[0]);
+				String url = str[1].replace("file:", "");
+				fileList.add(url);
+				if (id != fileList.size() - 1) {
+					System.out.println("Error in rankDocs!");
+				}
+				//String[] pairs = str[2].split(" ");
+				int[] topics = new int[str.length - 2];
+				double[] probs = new double[str.length - 2];
+				double probSum = 0;
+				for(int ii = 2; ii < str.length; ii++) {
+					String pair = str[ii];
+					String[] pp = pair.split(":");
+					int topic = Integer.parseInt(pp[0]);
+					double prob = Double.parseDouble(pp[1]);
+					topics[ii-2] = topic;
+					probs[ii-2] = prob;
+					probSum += prob;
+				}
+				
+				for(int ii = 0; ii < topics.length; ii++) {
+					ArrayList<DocProb> docs = null;
+					if(!topicDocs.containsKey(topics[ii])) {
+						docs = new ArrayList<DocProb> ();
+						topicDocs.put(topics[ii], docs);
+					} else {
+						docs = topicDocs.get(topics[ii]);
+					}
+					if (probs[ii] > 0) {
+						double prob = probs[ii] / probSum;
+						DocProb doc = new DocProb(id, prob, 0);
+						docs.add(doc);
+					}
+				}
+			}
+			dstream.close();
+		} catch (IOException e) {
+			System.out.println("No model.docs file Found!");
+		}
+		
+		for(int topic : topicDocs.keySet()) {
+			ArrayList<DocProb> array = topicDocs.get(topic);
+			DocProb[] tmp = Arrays.copyOf(array.toArray(), array.size(), DocProb[].class);
+			Arrays.sort(tmp);
+			topicDocsRanked.put(topic, tmp);
+		}
+	}
+	
+	public void rankDocs(ArrayList<String> fileList, HashMap<Integer, DocProb[]> topicDocsRanked) {
+		
+		HashMap<Integer, ArrayList<DocProb>> topicDocs = new HashMap<Integer, ArrayList<DocProb>> ();
+		
+		try{
+			String inputfile = this.outputName + ".docs";
+			System.out.println(inputfile);
+			FileInputStream fstream = new FileInputStream(inputfile);
+			DataInputStream dstream = new DataInputStream(fstream);
+			BufferedReader breader = new BufferedReader(new InputStreamReader(dstream));
+			
+			String statefile = this.outputName + ".states";
+			System.out.println(statefile);
+			FileInputStream fstatestream = new FileInputStream(statefile);
+			DataInputStream dstatestream = new DataInputStream(fstatestream);
+			BufferedReader statereader = new BufferedReader(new InputStreamReader(dstatestream));
+			
+			String strLine;// = brLHood.readLine();
+			String stateLine;
+			int count = -1;
+			while ((strLine = breader.readLine()) != null) {
+				count++;
+				if (count == 0) continue;
+				
+				strLine = strLine.trim();
+				String[] str = strLine.split(" ");
+				// id, doc, prob
+				int id = Integer.parseInt(str[0]);
+				String url = str[1].replace("file:", "");
+				fileList.add(url);
+				if (id != fileList.size() - 1) {
+					System.out.println("Error in rankDocs!");
+				}
+				//String[] pairs = str[2].split(" ");
+				int numtopics = (str.length-2) / 2;
+				double[] probs = new double[numtopics];
+				for(int tt = 0; tt < numtopics; tt++) {
+					int index = 2 * tt + 2;
+					int topic = Integer.parseInt(str[index]);
+					probs[topic] = Double.parseDouble(str[index+1]);
+				}
+				
+				stateLine = statereader.readLine();
+				stateLine = stateLine.trim();
+				String[] words = stateLine.split("\t");
+				int docLen = words.length;
+				int[] counts = new int[numtopics];
+				for(int tt = 0; tt < numtopics; tt++) {
+					counts[tt] = 0;
+				}
+				// words.length - 1, because there is an empty \t at the end
+				for(int ii = 0; ii < words.length - 1; ii++) {
+					String[] ww = words[ii].split(":");
+					int topic = Integer.parseInt(ww[0]);
+					counts[topic] += 1;
+				}
+				
+				for(int tt = 0; tt < probs.length; tt++) {
+					ArrayList<DocProb> docs = null;
+					if(!topicDocs.containsKey(tt)) {
+						docs = new ArrayList<DocProb> ();
+						topicDocs.put(tt, docs);
+					} else {
+						docs = topicDocs.get(tt);
+					}
+					if (probs[tt] > 0) {
+						//probs[tt] = probs[tt] * counts[tt];
+						DocProb doc = new DocProb(id, probs[tt], counts[tt]);
+						docs.add(doc);
+					}
+				}
+			}
+			dstream.close();
+			dstatestream.close();
+		} catch (IOException e) {
+			System.out.println("No model.docs file Found!");
+		}
+		
+		for(int topic : topicDocs.keySet()) {
+			ArrayList<DocProb> array = topicDocs.get(topic);
+			DocProb[] tmp = Arrays.copyOf(array.toArray(), array.size(), DocProb[].class);
+			Arrays.sort(tmp);
+			topicDocsRanked.put(topic, tmp);
+		}
+	}
+	
+	private String loadVocab () {
+		String vocabJson = "\"vocabulary\": [";
+		try {
+			FileInputStream infstream = new FileInputStream(this.vocabFile);
+			DataInputStream in = new DataInputStream(infstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF8"));
+			
+			String strLine;
+			//Read File Line By Line
+			int count = -1;
+			while ((strLine = br.readLine()) != null) {
+				strLine = strLine.trim();
+				String[] str = strLine.split("\t");
+				if (str.length > 1) {
+					count++;
+					this.vocab.add(str[1]);
+					vocabJson += "{\"typeindex\":" + count + ", \"word\":\"" + str[1] + "\"}, ";
+				} else {
+					System.out.println("Error! " + strLine);
+				}
+			}
+			in.close();
+			vocabJson += "]";
+			vocabJson = vocabJson.replace("}, ]", "} ]");
+		} catch (IOException e) {
+			System.out.println("No vocab file Found!");
+		}
+		return vocabJson;
+	}
+	
+	private HashMap<String, String> loadTopics () {
+		HashMap<String, String> wordTopics = new HashMap<String, String> ();
+		try {
+			String inputfile = this.outputName + ".topics";
+			FileInputStream infstream = new FileInputStream(inputfile);
+			DataInputStream in = new DataInputStream(infstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			
+			String strLine;
+			//Read File Line By Line
+			while ((strLine = br.readLine()) != null) {
+				strLine = strLine.trim();
+				if(strLine.matches("Topic \\d+")) {
+					String[] str = strLine.split(" ");
+					String topic = str[1];
+					// topic name
+					String words = "\"topic\": \"topic " + topic + "\", ";
+					// topic index
+					words += "\"topicindex\": " + topic + ", ";
+					// start words
+					words += "\"words\": [";
+					strLine = br.readLine();
+					strLine = br.readLine();
+					int count = 0;
+					while(strLine != null && count <= this.wordsNumPerTopic && !strLine.matches("^$")){
+						count += 1;
+						strLine = strLine.trim();
+						String[] str1 = strLine.split("\t");
+						String weight = str1[0];
+						int word = this.vocab.indexOf(str1[1]);
+						words += "{\"weight\": " + weight + ", \"word\": " + word + "}, ";
+						strLine = br.readLine();
+					}
+					words += "]";
+					words = words.replace("}, ]", "} ]");
+					wordTopics.put(topic,  words);
+				}
+
+			}
+			in.close();
+		} catch (IOException e) {
+			System.out.println("No model.topics file Found!");
+		}
+		return wordTopics;
+	}
+		
+	private String loadDocs(HashMap<String, String> docTopics) {
+		// rank related documents for each topic
+		ArrayList<String> fileList = new ArrayList<String> ();
+		HashMap<Integer, DocProb[]> topicDocsRanked = new HashMap<Integer, DocProb[]> ();		
+		this.rankDocs(fileList, topicDocsRanked);
+		
+		HashMap<String, String> urls = util.Util.loadUrls(this.urlFile);
+		
+		// generate the json format for documents
+		String docJson = "\"documents\": [";
+		
+		for(int topic : topicDocsRanked.keySet()) {
+			int count = 0;
+			DocProb[] ranked = topicDocsRanked.get(topic);
+			String docs = "\"docs\": [";
+			for(int ii = 0; ii < ranked.length; ii++) {
+				if (count >= this.docsNumPerTopic) {
+					break;
+				}
+				if (ranked[ii].len < this.docLen) {
+					//System.out.println(ranked[ii].len);
+					continue;
+				}
+				int id = ranked[ii].wi;
+				String[] name_tmp = fileList.get(id).split("/");
+				String name = name_tmp[name_tmp.length - 1];
+				String url = urls.get(name);
+				docs += "\"" + id + "\", ";
+				docJson += "{\"docid\": " + id + ", \"name\": \"" + name + "\", \"url\": \"" + url + "\"}, ";
+				count += 1;
+			}
+			docs += "], ";
+			docs = docs.replace(", ], ", "], ");
+			docTopics.put(""+topic, docs);
+			//System.out.println("hello3333! topic " + topic + " count " + count);
+		}
+		docJson += "], ";
+		docJson = docJson.replace("}, ],", "} ],");
+		
+		return docJson;
+	}
+	
+	public String changeFormat(){
+		// read vocab
+		String vocabJson = this.loadVocab();
+		
+		// read topics
+		HashMap<String, String> wordTopics = this.loadTopics();
+
+		// read documents
+		HashMap<String, String> docTopics = new HashMap<String, String> ();
+		String docJson = this.loadDocs(docTopics);
+		
+		// combine
+		String json = "{ " + docJson + "\"topics\": [";
+		for(String topic : wordTopics.keySet()) {
+			json += "{ " + docTopics.get(topic) + wordTopics.get(topic) + "}, ";
+		}
+		json += "], ";
+		json = json.replace("}, ], ", "} ], ");
+		json += vocabJson + "}";
+		
+		//System.out.println(json);
+		
+		return json;
+	}
+	
+	public String topicModeling() {
+		try {
+			// update related files
+			this.updateSetting();
+			
+			// generate vocab file
+			this.genVocab();
+			
+			// generate tree
+			this.genTree();
+			
+			// train topics
+			this.trainTopics();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		// change tree-TM output to json format
+		String json = this.changeFormat();
+		
+		return json;
+	}
+	
+	public String topicModelingResume(String feedback) {
+		try {
+			String logDir = this.outputDir + "/../itm_logs";
+			Util.creatDir(logDir);
+			String filename = logDir + "/r" + (this.round-1) + ".log";
+			if(!this.checkExist(filename)){
+				this.logs(feedback, filename);
+			}
+			this.parseJson(feedback);
+			return this.topicModeling();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static ArrayList<String> loadVocab (String vocabname) {
+		
+		ArrayList<String> vocab = new ArrayList<String> ();
+		
+		try {
+			FileInputStream infstream = new FileInputStream(vocabname);
+			DataInputStream in = new DataInputStream(infstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			
+			String strLine;
+			//Read File Line By Line
+			while ((strLine = br.readLine()) != null) {
+				strLine = strLine.trim();
+				String[] str = strLine.split("\t");
+				if (str.length > 1) {
+					vocab.add(str[1]);
+				} else {
+					System.out.println("Error! " + strLine);
+				}
+			}
+			in.close();
+		} catch (IOException e) {
+			System.out.println("No vocab file Found!");
+		}
+		return vocab;
+	}
+	
+	public static void logs(String json, String filename) throws Exception {
+		// keep track of users' feedback and related logs (in case information missing)
+
+		JSONObject obj = (JSONObject)JSONValue.parse(json);
+		
+		String logs = "";
+		logs += "User name: " + (String) obj.get("username") + "\n";
+		//logs += "Group name: " + (String) obj.get("groupname") + "\n";
+		logs += "Round ID: " + (Long) obj.get("roundid") + "\n";
+		logs += "Start time: " + (String) obj.get("starttime") + "\n";
+		logs += "End time: " + (String) obj.get("endtime") + "\n";
+		
+		JSONObject queryobj = (JSONObject) obj.get("clickeddocs");
+		String queryclickeddocs = "\n\nClicked docs\n*************************\n";
+		for(Object oo : queryobj.keySet()) {
+			String tt = (String) oo;
+			queryclickeddocs += "Topic " + tt + ": ";
+			JSONArray docsarray = (JSONArray) queryobj.get(tt);
+			for(int jj = 0; jj < docsarray.size(); jj++) {
+				queryclickeddocs += docsarray.get(jj) + ", ";
+			}
+			queryclickeddocs += "\n";
+			queryclickeddocs = queryclickeddocs.replace(", \n", "\n");
+		}
+		queryclickeddocs += "*************************\n";
+		logs += queryclickeddocs;
+		
+		
+		JSONArray array = (JSONArray) obj.get("correlations");
+		if(array != null) {
+			String correlations = "";
+			logs += "\n\nCorrelations\n*************************\n";
+			for(int ii = 0; ii < array.size(); ii++) {
+				JSONObject topicobj = (JSONObject) array.get(ii);
+				
+				correlations += "Topic: " + (String) topicobj.get("topicindex") + "\n";
+				correlations += "New name: " + (String) topicobj.get("newname") + "\n";
+				
+				JSONObject wordsobj = (JSONObject) topicobj.get("words");
+				JSONArray wordsarray;
+				
+				correlations += "Important words: ";
+				wordsarray = (JSONArray)wordsobj.get("important");
+				for(int jj = 0; jj < wordsarray.size(); jj++) {
+					correlations += (String)wordsarray.get(jj) + ", ";
+				}
+				correlations += "\n";
+				correlations = correlations.replace(", \n", "\n");
+				
+				correlations += "All words: ";
+				wordsarray = (JSONArray)wordsobj.get("all");
+				for(int jj = 0; jj < wordsarray.size(); jj++) {
+					correlations += (String)wordsarray.get(jj) + ", ";
+				}
+				correlations += "\n";
+				correlations = correlations.replace(", \n", "\n");
+				
+				correlations += "Ignored words: ";
+				wordsarray = (JSONArray)wordsobj.get("ignored");
+				for(int jj = 0; jj < wordsarray.size(); jj++) {
+					correlations += (String)wordsarray.get(jj) + ", ";
+				}
+				correlations += "\n";
+				correlations = correlations.replace(", \n", "\n");
+				
+				correlations += "Trash words: ";
+				wordsarray = (JSONArray)wordsobj.get("trash");
+				for(int jj = 0; jj < wordsarray.size(); jj++) {
+					correlations += (String)wordsarray.get(jj) + ", ";
+				}
+				correlations += "\n";
+				correlations = correlations.replace(", \n", "\n");
+				
+				correlations += "*************************\n";
+			}
+			logs += correlations;
+		}
+		
+		try {
+			PrintStream out = new PrintStream (filename);
+			out.print(logs);
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	public void parseJson(String json) throws Exception{
+		
+		if(this.checkExist(this.outputDir + "/removed.all") 
+				&& this.checkExist(this.outputDir + "/removed.new")
+				&& this.checkExist(this.outputDir + "/constraint.all")
+				&& this.checkExist(this.outputDir + "/constraint.new")
+				&& this.checkExist(this.outputDir + "/important.keep")){
+			return;
+		}
+		
+		System.out.println("Parsing user's feedback!");
+		
+		// load vocab file
+		this.vocab = loadVocab(this.vocabFile);
+		
+		// parse json and generate constraint file
+		
+		JSONObject obj = (JSONObject)JSONValue.parse(json);
+		JSONArray array = (JSONArray) obj.get("correlations");
+
+		String merge = "";
+		String split = "";
+		//HashSet<String> important = new HashSet<String> ();
+		String important = "";
+		HashSet<String> trash = new HashSet<String> ();
+		
+		for(int ii = 0; ii < array.size(); ii++) {
+			JSONObject topicobj = (JSONObject) array.get(ii);
+			String topic = (String) topicobj.get("topic");
+			topic = topic.replace("topic ", "");
+			
+			System.out.println("Get topic: " + topic);
+			//System.out.println(topicobj.get("newname"));
+			
+			JSONObject wordsobj = (JSONObject) topicobj.get("words");
+			JSONArray wordsarray;
+			//System.out.println(wordsobj.get("important"));
+			
+			JSONObject jsonsplitword;
+			String splitword = "";
+			
+			wordsarray = (JSONArray)wordsobj.get("important");
+			if(wordsarray != null && wordsarray.size() > 0) {
+				String cons = "MERGE_";
+				splitword = (String)wordsarray.get(0);
+
+				for(int jj = 0; jj < wordsarray.size(); jj++) {
+					String word = (String)wordsarray.get(jj);
+					// invalid constraint, ignore
+					if (this.vocab.indexOf(word) == -1) {
+						break;
+					}
+					cons += "\t" + word;
+					//important.add(word);
+					important += word + " " + topic + "\n";
+				}
+				merge += cons + "\n";
+			}
+			
+			wordsarray = (JSONArray)wordsobj.get("ignored");
+			if(wordsarray != null && wordsarray.size() > 0) {
+				int start = 0;
+				if (splitword == "") {
+					splitword = (String)wordsarray.get(0);
+					start = 1;
+				}
+				String cons = "";
+				for(int jj = start; jj < wordsarray.size(); jj++) {
+					String word = (String)wordsarray.get(jj);
+					// invalid constraint, ignore
+					if (this.vocab.indexOf(word) == -1) {
+						break;
+					}					
+					cons += "SPLIT_" + "\t" + splitword + "\t" + word + "\n";
+				}
+				split += cons;
+			}
+			
+			wordsarray = (JSONArray)wordsobj.get("trash");
+			if(wordsarray != null) {
+				for(int jj = 0; jj < wordsarray.size(); jj++) {
+					String word = (String)wordsarray.get(jj);
+					// invalid word, ignore
+					if (this.vocab.indexOf(word) == -1) {
+						break;
+					}
+					trash.add(word);
+				}
+			}
+			
+		}
+		
+		// output constraints to file
+		PrintStream out = new PrintStream (this.outputDir + "/constraint.new");
+		out.print(merge);
+		out.print(split);
+		out.close();
+		
+		// output the trash words to file
+		out = new PrintStream (this.outputDir + "/removed.new");
+		String removed = "";
+		for(String word : trash) {
+			System.out.println("removed words: " + word);
+			removed += word + "\n";
+		}
+		out.print(removed);
+		out.close();
+		
+		// output the important words to file
+		out = new PrintStream (this.outputDir + "/important.keep");
+		String keep = "";
+		//for(String word : important) {
+		//	keep += word + "\n";
+		//}
+		keep = important;
+		out.print(keep);
+		out.close();
+	}
+	
+	private String readFile(String filename) throws Exception{
+		Scanner sc = new Scanner(new File(filename));
+		String text = "";
+		if (sc.hasNext()) {
+			text = sc.useDelimiter("\\Z").next();
+			text += "\n";
+		}
+		sc.close();
+		return text;
+	}
+	
+	public void updateSetting() {
+		try {			
+			PrintStream out;
+			if (this.round == 0) {
+				// generate an empty constraint.all file
+				out = new PrintStream (this.outputDir + "/constraint.all");
+				out.close();
+				// generate an emtpy removed.all file
+				out = new PrintStream (this.outputDir + "/removed.all");
+				out.close();
+				// generate an empty removed.new file
+				out = new PrintStream (this.outputDir + "/removed.new");
+				out.close();
+				// generate an empty important.keep file (topic assignments of words on this list will be kept, not cleared)
+				out = new PrintStream (this.outputDir + "/important.keep");
+				out.close();
+			} else {
+				// current constraint.all = previous constraint.all + current constraint.new
+				out = new PrintStream (this.outputDir + "/constraint.all");
+				String output = "";
+				//output = this.readFile(this.preoutputDir + "/constraint.all");
+				//out.print(output);
+				output = this.readFile(this.outputDir + "/constraint.new");
+				out.print(output);
+				out.close();
+				
+				// current removed.all = previous removed.all + previous removed.new
+				out = new PrintStream (this.outputDir + "/removed.all");
+				output = this.readFile(this.preoutputDir + "/removed.all");
+				out.print(output);
+				output = this.readFile(this.preoutputDir + "/removed.new");
+				out.print(output);
+				out.close();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void main(String [] args) {
+		int r = 0;
+		String corpus = "fbis-itm";
+		String topicsNum = "" + 10;
+		String session = "" + 1;
+		String round = "" + r;
+		TreeTopicModeling treeTM = new TreeTopicModeling(corpus, topicsNum, session, round);
+		
+		//String json = "{\"topics\": [ { \"topic\": \"topic 46\", \"newname\": \"US Politics\", \"topicindex\": 2, \"words\":{ \"important\":[{\"word\":\"hhh\", \"typeindex\":0}, {\"word\":\"dog\", \"typeindex\":1}], \"all\":[{\"word\":\"cat\", \"typeindex\":0}, {\"word\":\"dog\", \"typeindex\":1}], \"ignored\":[{\"word\":\"one\", \"typeindex\":0}, {\"word\":\"two\", \"typeindex\":1}], \"trash\":[{\"word\":\"three\", \"typeindex\":0}, {\"word\":\"four\", \"typeindex\":1}] } } ]}";	
+		//try {
+		//	treeTM.parseJson(json);
+		//} catch (Exception e) {
+		//	e.printStackTrace();
+		//}
+		if (r == 0) {
+			String result = treeTM.topicModeling();
+			//System.out.println(result);
+		} else {
+			//String result = treeTM.topicModelingResume(json);
+			//System.out.println(result);
+		}
+		
+	}
+
+}

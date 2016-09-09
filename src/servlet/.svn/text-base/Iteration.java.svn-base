@@ -1,0 +1,93 @@
+package servlet;
+
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import java.io.*;
+
+import itm.Backend;
+
+/**
+ * Servlet implementation class Iteration
+ */
+public class Iteration extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+       
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public Iteration() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		
+		// TODO: added for testing purposes, this service will be called via POST only by Topics-UI front end
+		doPost(request, response);
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+
+		InputStream stream = request.getInputStream();
+		BufferedReader br = new BufferedReader(new InputStreamReader(stream));
+		String feedback = br.readLine();
+
+		String newsession=request.getParameter("newsession");
+		if (newsession == null) newsession="false";
+		
+		String sessionname=request.getParameter("sessionname");
+		String corpus=request.getParameter("corpusname");
+		String topicsnum=request.getParameter("topicsnum");
+		String round_id = request.getParameter("round_id");
+		
+		System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+		System.out.println(newsession);
+		System.out.println(feedback);
+		System.out.println("sessionname: " + sessionname);
+		System.out.println("corpusname: " + corpus);
+		System.out.println("topicsnum: " + topicsnum);
+		System.out.println("round_id: " + round_id);
+		System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+		
+		
+		String[] parameters=null;
+		//build list of parameters
+		
+		String json="";
+		if (newsession.equals("true")) {
+			json = Backend.createNewSession(corpus, topicsnum, sessionname);
+		} else {
+			json = Backend.iteration(corpus, topicsnum, sessionname, feedback, round_id);
+		}
+		
+		response.setContentType("application/json");
+		response.setCharacterEncoding("UTF-8");
+		// Get the printwriter object from response to write the required json object to the output stream      
+		PrintWriter out = response.getWriter();
+		
+		// Assuming your json object is **json**, perform the following, it will return your json object
+
+		//System.out.println(json.hashCode());
+		//String json1 = new String(json.getBytes(), "UTF-8");
+		System.out.println("check this: ..." + json.substring(json.length() - 100, json.length()));
+		out.print(json);
+		out.flush();
+
+	}
+
+}

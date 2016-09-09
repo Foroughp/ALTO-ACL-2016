@@ -1,0 +1,194 @@
+/* Override some defaults */
+html, body {
+	background-color: #eee;
+	
+}
+::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 7px;
+}
+::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: #D3D3D3;
+    -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
+}
+
+body {
+	padding-top: 40px;
+	/* 40px to make the container go all the way to the bottom of the topbar */
+}
+
+.container>footer p {
+	text-align: center; /* center align it with the container */
+}
+
+/* The white background content wrapper */
+.content {
+	background-color: #fff;
+	padding: 20px;
+	margin: 20px -20px 0px -20px;
+	/* negative indent the amount of the padding to maintain the grid system */
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+	-webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, .15);
+	-moz-box-shadow: 0 1px 2px rgba(0, 0, 0, .15);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, .15);
+}
+
+/* Page header tweaks */
+.page-header {
+	background-color: #f5f5f5;
+	padding: 20px 20px 10px;
+	margin: -20px -20px 20px;
+}
+
+.topbar .btn {
+	border: 0;
+}
+
+.row>.offset0andhalf {
+	margin-left: 50px;
+}
+
+.span2andhalf {
+	width: 130px;
+}
+
+.label {
+	margin-left: 3px;
+}
+
+
+.topic {
+	text-align: center;
+}
+
+
+hr {
+	margin: 0px;
+	border-bottom: 1px solid darkgrey;
+	width: 2px;
+}
+
+
+/* Autocomplete
+----------------------------------*/
+.ui-autocomplete {
+	position: absolute;
+	cursor: default;
+}
+
+.ui-autocomplete-loading {
+	background: white url('images/ui-anim_basic_16x16.gif') right center
+		no-repeat;
+}
+
+/* workarounds */
+* html .ui-autocomplete {
+	width: 1px;
+} /* without this, the menu expands to 100% in IE6 */
+
+/* Menu
+----------------------------------*/
+.ui-menu {
+	list-style: none;
+	padding: 2px;
+	margin: 0;
+	display: block;
+}
+
+.ui-menu .ui-menu {
+	margin-top: -3px;
+}
+
+.ui-menu .ui-menu-item {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+}
+
+.ui-menu .ui-menu-item a {
+	text-decoration: none;
+	display: block;
+	padding: .2em .4em;
+	line-height: 1.5;
+	zoom: 1;
+}
+
+.ui-menu .ui-menu-item a.ui-state-hover, .ui-menu .ui-menu-item a.ui-state-active
+	{
+	margin: -1px;
+}
+
+#start-test {
+	margin-top: 0px;
+	margin-left: 750px;
+}
+
+#timing {
+	width: 100px;
+}
+
+
+.right {
+	float: right;
+	width: 687px;
+}
+
+td {
+	border: 0px solid white !important;
+}
+
+a:visited {
+	color: #B0B0B0;
+}
+
+a:link {
+ 	color: #B0B0B0; 
+	/*color: #000000; black */
+}
+
+#finish_button {
+	width: 200px;
+}
+
+#label-display {
+	border-radius: 10px;
+	border: 2px solid #D0D0D0;
+	padding: 20px;
+	width: 200px;
+	height: 150px;
+	overflow-y: scroll;
+}
+
+
+#main-table {
+	width: 250px;
+	height: 150px;
+	position: relative;
+}
+
+.float {
+	height: 100px;
+	margin: 0;
+	padding: 0;
+	color: white;
+}
+
+.left {
+	position: fixed;
+	width: 50px;
+}
+
+.right {
+	float: right;
+	width: 100px;
+}
+
+.fixed {
+    display: block;
+    position: fixed;
+    top: 0;
+    width: 100%;
+}

@@ -1,0 +1,153 @@
+<html>
+
+<head>
+
+<style type="text/css">
+div.transmenu {
+	position: absolute;
+	top: 90%;
+	left: 0%;
+	width: 100%;
+	height: 10%;
+	background-color: #99CCFF;
+	text-align: center;
+}
+
+div.transmenu p {
+	margin:20px 20px 20px 20px;
+	font-size: 90%;
+	}
+
+div.main {
+	overflow-x: hidden;
+	overflow-y: auto;
+	top:0%; 
+	width: 100%; 
+	height: 90%;
+}
+
+div.segment {
+	text-align: left;
+	font-family: verdana, monospace;
+	font-size: 90%;
+	border: thin solid gray;
+}
+
+div.segment p {
+	margin: 20px 20px 20px 20px;
+}
+
+</style>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+<script type="text/javascript">
+	
+var last_hash;
+var topic_high;
+var query_high;
+var type_param;
+var word_param;
+var tag_begin;
+var tag_end;
+
+
+$(document).ready(function(){
+	
+	last_hash=undefined;
+	high={};
+	type_param=[];
+	word_param={};
+	tag_begin={};
+	tag_end={};
+
+	// Fetch types of highlight and words that will be highlighted
+	parse_words_to_highlight();
+	
+	// Roll to selected segment
+	var div=document.URL.split('#')[1];
+	var e=document.getElementById(div);
+	window.location.hash=e.id;
+	e.style.backgroundColor='#ddffff';
+	e.style.fontWeight='bold';
+	last_hash=div;
+	
+	// Highlight
+	highlight_parameters();
+	
+	// Firefox needs an extra setting of location.hash
+	//back_to_initial_segment();
+});
+
+$(window).bind('hashchange', function() {
+
+	// Change style of current hash element to normal
+	var e=document.getElementById(last_hash);
+	e.style.backgroundColor='#ffffff';
+	e.style.fontWeight='normal';
+
+	// Set new hash and change corresponding element to bold
+	var div=document.location.hash.split('#')[1];
+	
+	var e=document.getElementById(div);
+	e.style.backgroundColor='#ddffff';
+	e.style.fontWeight='bold';
+
+	// Update current hash element
+	last_hash=document.location.hash.split('#')[1];
+
+});
+
+function back_to_initial_segment() {
+	var div=document.location.hash.split('#')[1];
+	var e=document.getElementById(div);
+	window.location.hash=e.id;
+	e.scrollIntoView();
+}
+
+
+function highlight_parameters() {
+	var nodes=document.body.children[1].childNodes;
+	for (k=0;k<nodes.length;k++) {
+		if (nodes[k].nodeType==1) {
+    		for (var i=0; i<type_param.length; i++){
+    			for (var j=0; j<word_param[type_param[i]].length; j++) {
+    				var word=word_param[type_param[i]][j];
+       				nodes[k].innerHTML=
+        			nodes[k].innerHTML.replace(
+        					new RegExp("\\s+"+word,"gi"),
+        		    		tag_begin[type_param[i]]+"$&"+tag_end[type_param[i]]
+        			);
+
+    			}
+    		}
+		}		
+	}
+}
+
+function parse_words_to_highlight() {
+	var begin=document.URL.indexOf("?")+1;		  
+	var length=document.URL.indexOf("#")-begin;
+	var params=document.URL.substr(begin, length);
+	if (begin == 0)
+		return;
+
+	params=params.split("&");
+	// split param and value into individual pieces
+	for (var i=0; i<params.length; i++) {
+		var temp=params[i].split("=");
+		type_param.push(temp[0]);
+		word_param[temp[0]]=temp[1].split(/\+|_/);
+       	if (temp[0].localeCompare("query")) {
+    		tag_begin[temp[0]]="<font color=green><b>";
+    		tag_end[temp[0]]="</b></font>";
+       	}
+    	else {
+    		tag_begin[temp[0]]="<font color=blue><b>";
+    		tag_end[temp[0]]="</b></font>";
+    	}
+	}
+}
+
+</script>
+
+</head>

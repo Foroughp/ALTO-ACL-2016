@@ -1,0 +1,84 @@
+package util;
+
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+public class Util {
+	
+	public static ArrayList<String> loadFileList(String filelistname) {
+		ArrayList<String> filelist = new ArrayList<String> ();
+		try {
+			FileInputStream infstream = new FileInputStream(filelistname);
+			DataInputStream in = new DataInputStream(infstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			
+			String strLine;
+			//Read File Line By Line
+			int id = -1;
+			while ((strLine = br.readLine()) != null) {
+				id++;
+				strLine = strLine.trim();
+				filelist.add(strLine);
+				if(filelist.size() != id + 1) {
+					System.out.println("Error in loadFileList!");
+					System.exit(1);
+				}
+			}
+			in.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return filelist;
+	}
+	
+	public static HashMap<String, String> loadUrls(String filename) {
+		HashMap<String, String> urls = new HashMap<String, String> ();
+		ArrayList<String> list = util.Util.loadFileList(filename);
+		
+		for(String line : list) {
+			String[] words = line.split(" ");
+			urls.put(words[0], words[1]);
+		}
+		
+		return urls;
+	}
+	
+	public static String readFile(String filename) {
+		String words = "";
+		try{
+			FileInputStream docfstream = new FileInputStream(filename);
+			DataInputStream docin = new DataInputStream(docfstream);
+			BufferedReader docbr = new BufferedReader(new InputStreamReader(docin));
+			String strLine;
+			//Read File Line By Line
+			while ((strLine = docbr.readLine()) != null) {
+				strLine = strLine.trim();
+				words += strLine + " ";
+			}
+			docin.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		words = words.trim();
+		return words;
+	}
+	
+	public static void creatDir(String dir) throws IOException{
+		File theDir = new File(dir);
+		if (!theDir.exists()) {
+			if (theDir.mkdir()) {
+				System.out.println("Output Directory " + dir + " created!");
+			} else {
+				System.out.println("No output directory!");
+				throw new IOException();
+			}
+		}
+	}
+
+}

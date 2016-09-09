@@ -1,0 +1,561 @@
+// edited by yuening
+function edit_panel_save()
+{
+	update_correlation($("#all-words").text(), "all");
+	update_correlation($("#important-words").text(), "important");
+	update_correlation($("#ignored-words").text(), "ignored");
+	update_correlation($("#deleted-words").text(), "deleted");
+	
+	editingtopic = -1;
+	new_words = [];
+	//$( "#tags" ).unautocomplete();
+	$("#edit-panel").hide();
+	$('#next-round').trigger('click');
+	//return false;
+}
+
+//added by yuening
+function update_correlation(text, option) {
+	// option can by: "all", "important", "ignored", "deleted"
+	var textarray;
+	var ii;
+	
+	text = text.replace(/(^\s+|\s+$)/g,'');
+	text = text.replace(/(\s+)/g,' ');
+	textarray = text.split(" ");
+	
+	//alert(editingtopic + " " + text + option);
+	correlations[editingtopic][option] = new Array();
+	
+	if(textarray != "") {
+		for(ii = 0; ii < textarray.length; ii++) {
+			correlations[editingtopic][option].push(textarray[ii]);
+		}
+	}
+	
+}
+
+// edited by yuening
+function edit_panel_cancel()
+{
+	editingtopic = -1;
+	new_words = [];
+	$("#edit-panel").hide();
+}
+
+// edited by yuening
+function get_word(typeindex, vocabulary){
+
+	if (typeindex >= 0 && typeindex < vocabulary.length) {
+		return vocabulary[typeindex];
+	} else {
+		alert("Typeindex wrong!");
+		return null;
+	}
+}		
+
+function get_doc(doc, documents){
+	for (var d in documents){
+		if (documents[d]["docid"]==doc){
+			return documents[d];
+		}
+	}
+	return "";
+}		
+
+//edited by yuening
+function add_topic(topic)
+//Function adds row with topic content into table (including all data bindings to DOM elements)
+{
+	var topicindex=topic["topicindex"];
+	if (correlations[""+topicindex] == null) {
+		correlations[""+topicindex] = {};
+		correlations[""+topicindex]["important"] = new Array();
+		correlations[""+topicindex]["ignored"] = new Array();
+		correlations[""+topicindex]["deleted"] = new Array();
+		correlations[""+topicindex]["topicindex"] = topicindex;
+		correlations[""+topicindex]["newname"] = null;
+	}
+	correlations[""+topicindex]["all"] = new Array();
+	
+	var wrds="";
+	var words = topic["words"];
+	var words_string = "";
+	var count = 0;
+
+	var size = 40;
+	var largest = 40;
+	for (var w in words) {
+		var lookup=get_word(words[w]["word"],vocab);
+		var weight = words[w]["weight"];
+		if (count == 0) {
+			size = 40;
+			largest = size / weight;
+		} else {
+			size = weight * largest;
+		}
+		if (size < 10) {
+			size = 10;
+		}
+		//wrds=wrds+ "<span class=topicword" + count + ">" + lookup+"</span> ";
+		wrds=wrds+ "<span style='font-size:" + size + "px'>" + lookup+"</span> ";
+		words_string = words_string + lookup + "+";
+		if ((correlations[""+topicindex]["important"].indexOf(lookup) < 0) 
+				&& (correlations[""+topicindex]["deleted"].indexOf(lookup) < 0) 
+				&& (correlations[""+topicindex]["ignored"].indexOf(lookup) < 0)){
+			correlations[""+topicindex]["all"].push(lookup);
+		}
+		count += 1;
+	}
+
+	topicdocs[""+topicindex] = new Array();
+	var dcs="";
+	//var words_string = wrds.replace(new RegExp(" ", 'g'), "+");
+	words_string = words_string + "]";
+	words_string = words_string.replace("+]", "");
+	topicwords[""+topicindex] = words_string;
+	var documents = topic["docs"];
+	var count = 0;
+	for (var d in documents) {
+		var lookup=get_doc(documents[d], docs);
+		if (count < topic_doc_show_num) {
+			url = backend + lookup["url"];
+			url = url.replace(".html", ".html?topic=" + words_string);
+			docid = "topic" + topicindex + "-" + lookup["name"];
+			dcs = dcs + "<a href='#' id=" + docid;
+			dcs = dcs + " onclick=\"load_doc('" + lookup["name"] + "','" + url + "','" + docid + "','" + topicindex + "');return false;\">" + lookup["name"] + ";</a> ";
+		}
+		count = count + 1;
+		topicdocs[""+topicindex].push(lookup["name"]);
+	}
+	
+	var html="";
+	html=html+'<hr style="width:100%"/>';
+	html=html+'<div class="row data-item"  id="topic-'+topicindex+'">';
+	html=html+'	<div class="span16  unread">';
+	html=html+'	<div class="row">';
+	
+	if (correlations[""+topicindex]["newname"] != null) {
+		html=html+'	<div class="span4 topic">' + correlations[""+topicindex]["newname"] + '</div>';
+	} else {
+		html=html+'	<div class="span4 topic">' + topic["topic"] + '</div>';
+	}
+	
+	html=html+'	<div class="span7 words" id="topic-' + topicindex + '-words">' + wrds + '</div>';
+	html=html+'	<div class="span5 documents">'+dcs+'</div>';
+	html=html+'	</div>';
+
+	html=html+'	</div>';
+	html=html+'</div>';
+
+	$(html).appendTo("#mainform_items");
+
+	//attach topic data to tr element
+	$("#topic-"+topicindex).data("topic",topic);
+	//attach edit event to tr element (to open large editing panel)
+	
+	$("#topic-"+topicindex).click({id:"#topic-"+topicindex},function(e) {
+		if (doc_clicked) {
+			doc_clicked = false;
+			return;
+		}
+		topicindex = e.data.id.replace("#topic-", "");
+		previoustopicindex = editingtopic;
+		
+		$(e.data.id+">div").removeClass("unread");
+		$(e.data.id+">div").addClass("read");
+		
+		
+		if($("#edit-panel").is(":visible")) {
+			if (topicindex != previoustopicindex) {
+				alert("You have unsaved changes on a topic.  Please save or cancel them.");
+			}
+			return false;
+		}
+		
+		if (minute >= 0) { 
+			new_words = [];
+			editingtopic = topicindex;
+			$('#edit-panel').insertAfter(e.data.id);
+			$( "#tags" ).autocomplete({ source: vocab });
+			$('#edit-panel').show();
+			update_display(editingtopic, "all");
+			update_display(editingtopic, "important");
+			update_display(editingtopic, "ignored");
+			update_display(editingtopic, "deleted");
+			
+			permissionForm.reinit();
+		}
+
+
+	});
+	
+	//attcha events to topic name for inline editing
+	$("#topic-"+topicindex+" .topic").click({id:"#topic-"+topicindex, topicname:topic["topic"]},function(e) {
+		//alert("topic name: "+e.data.topicname+" clicked");
+		
+		$(e.data.id+">div").removeClass("unread");
+		$(e.data.id+">div").addClass("read");
+		
+		if (minute >= 0) { 
+			$(e.data.id+" .topic").html("<input id='topicnameinlineeditor' value='"+e.data.topicname+"'> </input>");
+			if(correlations[topicindex]["newname"] != null) {
+				$(e.data.id+" .topic>input").val(correlations[topicindex]["newname"]);
+			}
+			
+			$(e.data.id+" .topic>input").blur({id:e.data.id}, function(e) {
+				
+				var name = $(e.data.id+" .topic>input").val();
+				
+				if(name == "") {
+					if(correlations[topicindex]["newname"] != null) {
+						name = correlations[topicindex]["newname"];
+					} else {
+						name = "topic " + currenttopic;
+					}
+				}
+				
+				$(e.data.id+"  .topic").html(name);
+				correlations[topicindex]["newname"] = name;
+			});
+			
+			$(e.data.id+"  .topic>input").focus();
+			
+			$(e.data.id+"  .topic>input").keypress({id:e.data.id}, function(e){
+				if ( e.which == 13 ) {
+					e.preventDefault();
+					$(e.data.id+" .topic>input").blur();
+				}
+			});
+		}
+
+		return false;
+	});
+	
+}
+
+
+//added by yuening
+function update_display(editingtopic, option) {
+	var words = "";
+	var ii;
+	for (ii = 0; ii < correlations[editingtopic][option].length; ii++) {
+		words=words+"<a href='javascript:void(0)' draggable='true' class='label'>"+correlations[editingtopic][option][ii]+"</a> ";
+	}
+	var name = "#" + option + "-words";
+	$(name).html(words);
+}
+
+function change_format(){
+	var corr_json = {};
+	
+	corr_json["correlations"] = new Array();
+	
+	for(var ii in correlations) {
+		var tmp = {};
+		tmp["topic"] = "topic " + ii;
+		tmp["newname"] = correlations[ii]["newname"];
+		tmp["topicindex"] = ii;
+		tmp["words"] = {};
+		tmp["words"]["all"] = new Array();
+		tmp["words"]["important"] = new Array();
+		tmp["words"]["ignored"] = new Array();
+		tmp["words"]["trash"] = new Array();
+		tmp["words"]["all"] = correlations[ii]["all"];
+		tmp["words"]["important"] = correlations[ii]["important"];
+		tmp["words"]["ignored"] = correlations[ii]["ignored"];
+		tmp["words"]["trash"] = correlations[ii]["deleted"];
+		corr_json["correlations"].push(tmp);
+	}
+	
+	// log the other related information
+	//corr_json["groupname"] = groupname;
+	corr_json["username"] = username;
+	corr_json["roundid"] = round_id - 1;
+	corr_json["starttime"] = logs["starttime"];
+	corr_json["endtime"] = minute + ":" + second;
+	corr_json["clickeddocs"] = logs["clickeddocs"];
+	
+	return corr_json;
+}
+
+
+//edited by yuening
+function render_input(json)
+{
+	//clear topics list
+	$("#mainform_items").empty();
+	
+	//save vocabulary and documents to global variables
+	docs=json.documents;
+	tmp_vocab = json.vocabulary;
+	
+	vocab = [];
+	for (var word in tmp_vocab){
+		vocab.push(tmp_vocab[word].word);
+		if((vocab.length-1) != tmp_vocab[word].typeindex) {
+			alert("vocab index problem! " + (vocab.length-1) + " != " + tmp_vocab[word].typeindex);
+			break;
+		}
+	}
+
+	var tbl="";
+
+	var topics = json.topics;
+
+	for (var t in topics) {
+		add_topic(topics[t]);
+	}
+	
+	init_itm_logs();
+	round_id=round_id+1;
+}
+
+function load_input(sessionname, corpusname, topicsnum, newsession, round_id)
+{
+	var endpoint=backend+"/Iteration?newsession="+newsession+"&sessionname="+sessionname+"&corpusname="+corpusname+"&topicsnum="+topicsnum+"&round_id="+round_id;
+	//endpoint = endpoint + "&test=" + testflag;
+    // SHOW overlay
+	$('#loading').modal({
+	  keyboard: false
+	})
+	$('#loading_words').html("Loading next round ...");
+    $('#loading').modal('show');
+    $(".modal-backdrop").unbind();
+
+	var output="";
+
+	$.ajax({
+		type: "POST",
+		contentType: "application/x-www-form-urlencoded;charset=utf-8",
+		url: endpoint,
+		data: output,
+		success: function(json) {
+	    	render_input(json);
+	        // HIDE the overlay:
+	        $('#loading').modal('hide');
+    	}
+	});
+}
+
+function reload_input(sessionname, corpusname, topicsnum, newsession, round_id, json_correlations)
+{	
+	var endpoint=backend+"/Iteration?newsession="+newsession+"&sessionname="+sessionname+"&corpusname="+corpusname+"&topicsnum="+topicsnum+"&round_id="+round_id;
+	//endpoint = endpoint + "&test=" + testflag;
+    // SHOW overlay
+	
+	$('#loading').modal({
+	  keyboard: false
+	})
+	$('#loading_words').html("Loading next round ...");
+    $('#loading').modal('show');
+    $(".modal-backdrop").unbind();
+	
+	$.ajax({
+		type: "POST",
+		url: endpoint,
+		data: json_correlations,
+		success: function(json) {
+			//alert("JSON Data: " + json);
+			render_input(json);
+			// HIDE the overlay:
+			$('#loading').modal('hide');
+			
+			itm_done = true;
+			if (test_wait == true) {
+				test_wait = false;
+			}
+    	}
+	});
+}
+
+function load_doc(docname, url, docid, topicid) {
+	
+	doc_clicked = true;
+
+	$("#"+docid).css('color', '#800080');
+	
+	var height = 500;
+	var width = 600;
+	var margin = 20;
+	
+	var top = margin;
+	var left = screen.width - width - margin;
+	var mywindow = window.open(url, "Doc display", "status=1" + ", scrollbars=1" +
+			", height=" + height +
+			", width=" + width +
+			", top=" + 20 +
+			", left=" + left);
+
+	mywindow.focus();
+	
+	log_itm_clicked_doc(""+topicid, docname);
+	
+}
+
+
+function load_alldoc() {
+	
+	url = backend + "/data/" + corpusname + ".html";
+	
+	var height = 500;
+	var width = 400;
+	var margin = 20;
+	
+	var top = margin;
+	var left = screen.width - width - margin;
+	var mywindow = window.open(url, "Doc display", "status=1" + ", scrollbars=1" +
+			", height=" + height +
+			", width=" + width +
+			", top=" + 20 +
+			", left=" + left);
+	
+	mywindow.focus();
+}
+
+
+function togglemore(id) {
+	$("#prev" + id).toggle();
+	$("#next" + id).toggle();
+}
+
+//edited by yuening
+function setup_autocomplete()
+{
+	$( "#tags" ).autocomplete({
+		source: vocab,
+		//minLength:2
+	});
+	
+	$("#add-tag").click(function(){
+		//alert("click!");
+		
+		var new_word = $("#tags").val();
+		var index = vocab.indexOf(new_word);
+		
+		if(vocab.indexOf(new_word) < 0) {
+			alert("No such word in vocabulary: " + new_word);
+		} else if ((correlations[editingtopic]["all"].indexOf(new_word) >= 0) 
+				|| (correlations[editingtopic]["important"].indexOf(new_word) >= 0) 
+				|| (correlations[editingtopic]["deleted"].indexOf(new_word) >= 0) 
+				|| (correlations[editingtopic]["ignored"].indexOf(new_word) >= 0)
+				|| (new_words.indexOf(new_word) >= 0) ){
+			alert("This word is already in this topic");
+		} else {
+			$("#all-words").append('<a href="javascript:void(0)" draggable="true" class="label"><font color="red">'+new_word+'</font></a> ');
+			new_words.push(new_word);
+			permissionForm.reinit();
+		}
+		
+		$("#tags").val("");
+		return false;
+	});
+}
+
+function generate_output(){
+	var dataNodes = $('.data-item');
+	//debugger;
+	output="";
+	
+	for (var i=0; i<dataNodes.length; i++) {
+		var orig=$('#'+dataNodes[i].id).data().topic.topic;
+		var mod=$('#'+dataNodes[i].id+" > .span16 > .row > .topic")[0].innerHTML;
+		output=output+" "+orig+":"+mod+", ";
+	}
+}
+
+// edited by yuening
+function onload_stuff()
+{
+	$("#edit-panel-save").click(function(){ 
+		edit_panel_save(); 
+		return false;
+	});
+	
+	$("#edit-panel-cancel").click(function(){ 
+		edit_panel_cancel();  
+		return false;
+	});
+		
+	$("#next-round").click(function()
+	{
+		if($("#edit-panel").is(":visible")) {
+			alert("You have unsaved changes on a topic.  Please save or cancel them.");
+			return false;
+		}
+		$("#edit-panel").hide();
+		$('#edit-panel').insertAfter($('#title'));
+		generate_output();
+	});
+
+}
+
+//added by yuening
+function init_itm_logs() {
+	logs = {};
+	logs["starttime"] = minute + ":" + second;
+	logs["clickeddocs"] = {};
+	
+	logs["username"] = username;
+	logs["roundid"] = round_id;
+}
+
+
+function log_itm_clicked_doc(topicid, docname) {
+	if (logs["clickeddocs"][topicid] == null) {
+		logs["clickeddocs"][topicid] = [];
+	}
+	logs["clickeddocs"][topicid].push(docname);
+}
+
+
+// added by yuening
+function count_down(){
+	
+	if(second == 0) {
+		second = 60;
+		minute = minute - 1;
+	}
+	
+	second = second - 1;
+	
+	if(minute >= 0) {
+		//alert(minute + ":" + second);
+		var dmin = "" + minute;
+		if(minute < 10) {
+			dmin = "0" + minute;
+		}
+		
+		var dsec = "" + second;
+		if(second < 10) {
+			dsec = "0" + second;
+		}
+		
+		$("#timing").val("Time left: " + dmin + ":" + dsec);
+		setTimeout("count_down()",1000);
+	}
+	
+	if ( (minute == 1 || minute == 5) && second == 0) {
+		alert(minute + " minutes left for updating the topics!");
+	}
+	
+	if (minute == 0 && second == 0) {
+		
+		if($("#edit-panel").is(":visible")) {
+			var result = confirm("Sorry. Time up for updating the topics! You have unsaved changes. Do you want to save them now?");
+			if (result == true) {
+				edit_panel_save();
+			} else {
+				edit_panel_cancel();
+			}
+		}
+
+		if(itm_done == true) {
+			alert("Thanks for playing with ITM. Now you cannot edit the topics any more, you can only check the topics and documents.");
+		} else {
+			test_wait = true;
+		}
+
+	}
+	
+}

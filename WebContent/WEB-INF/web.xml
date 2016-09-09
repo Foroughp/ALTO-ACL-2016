@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
+  <display-name>alto-release</display-name>
+  <welcome-file-list>
+    <welcome-file>newsession.html</welcome-file>
+    <welcome-file>index.htm</welcome-file>
+    <welcome-file>index.jsp</welcome-file>
+    <welcome-file>default.html</welcome-file>
+    <welcome-file>default.htm</welcome-file>
+    <welcome-file>default.jsp</welcome-file>
+  </welcome-file-list>
+ 
+  <servlet>
+    <description></description>
+    <display-name>NewSession</display-name>
+    <servlet-name>NewSession</servlet-name>
+    <servlet-class>servlet.NewSession</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>NewSession</servlet-name>
+    <url-pattern>/NewSession</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>DataLoader</display-name>
+    <servlet-name>DataLoader</servlet-name>
+    <servlet-class>servlet.DataLoader</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>DataLoader</servlet-name>
+    <url-pattern>/DataLoader</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>DisplayData</display-name>
+    <servlet-name>DisplayData</servlet-name>
+    <servlet-class>servlet.DisplayData</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>DisplayData</servlet-name>
+    <url-pattern>/DisplayData</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>Classify</display-name>
+    <servlet-name>Classify</servlet-name>
+    <servlet-class>servlet.Classify</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Classify</servlet-name>
+    <url-pattern>/Classify</url-pattern>
+  </servlet-mapping>
+    <servlet>
+    <description></description>
+    <display-name>Logger</display-name>
+    <servlet-name>Logger</servlet-name>
+    <servlet-class>servlet.Logger</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Logger</servlet-name>
+    <url-pattern>/Logger</url-pattern>
+  </servlet-mapping>
+
+</web-app>

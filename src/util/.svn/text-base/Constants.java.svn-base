@@ -1,0 +1,15 @@
+package util;
+
+public class Constants
+{	
+	// base directory
+	public final static String RESULT_BASE_DIR = "/Users/student/Documents/work/topics/topicmod/projects/itm-evaluation/itm-release/results/";
+	
+	// set up
+	public final static int INITIAL_ITERATION = 300; // number of initial iterations
+	public final static int TOPIC_DOC_NUM = 30; // the number of top documents for each topic
+	public final static int TOPIC_WORD_NUM = 30; // number of words displayed for each topic
+	public final static int TOPIC_DOC_SHOW_NUM = 20; // defined in ui.html by topic_doc_show_num, should be <= TOPIC_DOC_NUM
+	public final static int STEP_ITERATION = 20; // number of iterations for each step
+	public final static int TOPIC_DOC_LENGTH = 3; // the document length limit for the documents displayed for each topic
+}

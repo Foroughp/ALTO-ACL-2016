@@ -1,0 +1,79 @@
+package itm;
+
+import java.io.IOException;
+import java.lang.Runtime;
+
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.Reader;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+
+public class Backend {
+	
+	public static String createNewSession(String[] params)
+	{
+		String json="";
+		
+		//use parameters like session name, corpus, topic num to create new session and return JSON with initial data
+		json="{...}";
+		return json;
+	}
+
+	public static String createNewSession(String corpus, String topicsnum, String sessionname)
+	{
+		String json="";
+		
+		System.out.println("Creating new session: corpus " + corpus + ", sessionname: " + sessionname + ", topicsnum: " + topicsnum);
+				
+		//corpus = "synthetic";
+		//String session = "" + 1;
+		//topicsnum = "" + 5;
+		
+		String round = "0";
+				
+		TreeTopicModeling treeTM = new TreeTopicModeling(corpus, topicsnum, sessionname, round);
+		//treeTM.logTest();
+		//json = treeTM.changeFormat();
+		json = treeTM.topicModeling();
+		int end = Math.min(100, json.length());
+		System.out.println(json.substring(0, end));
+		return json;
+	}
+	
+	public static String iteration(String corpus, String topicsnum, String sessionname, String feedback, String round_id) {
+		String json="";
+		
+		//use parameters like session name, corpus, topic num to retrieve info about session
+		//use input to generate new list of topics and return output in JSON format
+		json="{...}";
+		
+		//corpus = "synthetic";
+		//topicsnum = "" + 5;
+				
+		TreeTopicModeling treeTM = new TreeTopicModeling(corpus, topicsnum, sessionname, round_id);
+		
+		//treeTM.logTest();
+		//json = treeTM.changeFormat();
+		
+		json = treeTM.topicModelingResume(feedback);
+		int end = Math.min(100, json.length());
+		System.out.println(json.substring(0, end));
+		
+		return json;
+	}
+	
+	public static void main(String[] args) {
+		System.out.println("hello");
+		String corpus = "fbis-itm";
+		String topicsnum = "10";
+		String sessionname = "1";
+		createNewSession(corpus, topicsnum, sessionname);
+	}
+}

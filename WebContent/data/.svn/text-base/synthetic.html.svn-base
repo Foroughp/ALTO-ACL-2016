@@ -1,0 +1,3165 @@
+<html>
+
+<head>
+
+<style type="text/css">
+div.transmenu {
+	position: absolute;
+	top: 90%;
+	left: 0%;
+	width: 100%;
+	height: 10%;
+	background-color: #99CCFF;
+	text-align: center;
+}
+
+div.transmenu p {
+	margin:20px 20px 20px 20px;
+	font-size: 90%;
+	}
+
+div.main {
+	overflow-x: hidden;
+	overflow-y: auto;
+	top:0%; 
+	width: 100%; 
+	height: 90%;
+}
+
+div.segment {
+	text-align: left;
+	font-family: verdana, monospace;
+	font-size: 90%;
+	border: thin solid gray;
+}
+
+div.segment p {
+	margin: 20px 20px 20px 20px;
+}
+
+</style>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+<script type="text/javascript">
+	
+var last_hash;
+var topic_high;
+var query_high;
+var type_param;
+var word_param;
+var tag_begin;
+var tag_end;
+
+
+$(document).ready(function(){
+	
+	last_hash=undefined;
+	high={};
+	type_param=[];
+	word_param={};
+	tag_begin={};
+	tag_end={};
+
+	// Fetch types of highlight and words that will be highlighted
+	parse_words_to_highlight();
+	
+	// Roll to selected segment
+	var div=document.URL.split('#')[1];
+	var e=document.getElementById(div);
+	window.location.hash=e.id;
+	e.style.backgroundColor='#ddffff';
+	e.style.fontWeight='bold';
+	last_hash=div;
+	
+	// Highlight
+	highlight_parameters();
+	
+	// Firefox needs an extra setting of location.hash
+	//back_to_initial_segment();
+});
+
+$(window).bind('hashchange', function() {
+
+	// Change style of current hash element to normal
+	var e=document.getElementById(last_hash);
+	e.style.backgroundColor='#ffffff';
+	e.style.fontWeight='normal';
+
+	// Set new hash and change corresponding element to bold
+	var div=document.location.hash.split('#')[1];
+	
+	var e=document.getElementById(div);
+	e.style.backgroundColor='#ddffff';
+	e.style.fontWeight='bold';
+
+	// Update current hash element
+	last_hash=document.location.hash.split('#')[1];
+
+});
+
+function back_to_initial_segment() {
+	var div=document.location.hash.split('#')[1];
+	var e=document.getElementById(div);
+	window.location.hash=e.id;
+	e.scrollIntoView();
+}
+
+
+function highlight_parameters() {
+	var nodes=document.body.children[1].childNodes;
+	for (k=0;k<nodes.length;k++) {
+		if (nodes[k].nodeType==1) {
+    		for (var i=0; i<type_param.length; i++){
+    			for (var j=0; j<word_param[type_param[i]].length; j++) {
+    				var word=word_param[type_param[i]][j];
+       				nodes[k].innerHTML=
+        			nodes[k].innerHTML.replace(
+        					new RegExp("\\s+"+word,"gi"),
+        		    		tag_begin[type_param[i]]+"$&"+tag_end[type_param[i]]
+        			);
+
+    			}
+    		}
+		}		
+	}
+}
+
+function parse_words_to_highlight() {
+	var begin=document.URL.indexOf("?")+1;		  
+	var length=document.URL.indexOf("#")-begin;
+	var params=document.URL.substr(begin, length);
+	if (begin == 0)
+		return;
+
+	params=params.split("&");
+	// split param and value into individual pieces
+	for (var i=0; i<params.length; i++) {
+		var temp=params[i].split("=");
+		type_param.push(temp[0]);
+		word_param[temp[0]]=temp[1].split("+");
+       	if (temp[0].localeCompare("query")) {
+    		tag_begin[temp[0]]="<font color=green><b>";
+    		tag_end[temp[0]]="</b></font>";
+       	}
+    	else {
+    		tag_begin[temp[0]]="<font color=blue><b>";
+    		tag_end[temp[0]]="</b></font>";
+    	}
+    			
+	}
+}
+
+</script>
+
+</head>
+
+<body>
+<div class="transmenu"><p><input type="button" style="font-size:100%" value="Back to initial document" onclick="back_to_initial_segment()"/></p></div>
+
+<div class="main">
+<div class="segment" id="0_0">
+<p>
+cat cat moose moose cat
+</p>
+</div>
+
+<div class="segment" id="0_1">
+<p>
+broom mop broom bucket mop
+</p>
+</div>
+
+<div class="segment" id="0_2">
+<p>
+cat cat cat cat moose
+</p>
+</div>
+
+<div class="segment" id="0_3">
+<p>
+three friday four thursday three
+</p>
+</div>
+
+<div class="segment" id="0_4">
+<p>
+broom broom mop mop bucket
+</p>
+</div>
+
+<div class="segment" id="0_5">
+<p>
+broom broom broom broom mop
+</p>
+</div>
+
+<div class="segment" id="0_6">
+<p>
+cat cat butterfly cat cat
+</p>
+</div>
+
+<div class="segment" id="0_7">
+<p>
+broom mop broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_8">
+<p>
+cat cat cat moose cat
+</p>
+</div>
+
+<div class="segment" id="0_9">
+<p>
+north south cat south south
+</p>
+</div>
+
+<div class="segment" id="0_10">
+<p>
+mop mop broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_11">
+<p>
+tuesday thursday saturday tuesday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_12">
+<p>
+broom broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_13">
+<p>
+south north south north south
+</p>
+</div>
+
+<div class="segment" id="0_14">
+<p>
+one five six six four
+</p>
+</div>
+
+<div class="segment" id="0_15">
+<p>
+three one four three four
+</p>
+</div>
+
+<div class="segment" id="0_16">
+<p>
+monday monday friday thursday friday
+</p>
+</div>
+
+<div class="segment" id="0_17">
+<p>
+cat cat moose cat cat
+</p>
+</div>
+
+<div class="segment" id="0_18">
+<p>
+broom broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_19">
+<p>
+broom broom broom mop broom
+</p>
+</div>
+
+<div class="segment" id="0_20">
+<p>
+six five four four six
+</p>
+</div>
+
+<div class="segment" id="0_21">
+<p>
+friday tuesday monday friday saturday
+</p>
+</div>
+
+<div class="segment" id="0_22">
+<p>
+cat cat moose cat cat
+</p>
+</div>
+
+<div class="segment" id="0_23">
+<p>
+six east four six south
+</p>
+</div>
+
+<div class="segment" id="0_24">
+<p>
+six five three four cat
+</p>
+</div>
+
+<div class="segment" id="0_25">
+<p>
+five two one one one
+</p>
+</div>
+
+<div class="segment" id="0_26">
+<p>
+cat cat four cat cat
+</p>
+</div>
+
+<div class="segment" id="0_27">
+<p>
+monday monday tuesday monday monday
+</p>
+</div>
+
+<div class="segment" id="0_28">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_29">
+<p>
+south east north north south
+</p>
+</div>
+
+<div class="segment" id="0_30">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_31">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_32">
+<p>
+broom bucket mop mop broom
+</p>
+</div>
+
+<div class="segment" id="0_33">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_34">
+<p>
+tuesday thursday monday tuesday saturday
+</p>
+</div>
+
+<div class="segment" id="0_35">
+<p>
+broom broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_36">
+<p>
+broom broom broom mop broom
+</p>
+</div>
+
+<div class="segment" id="0_37">
+<p>
+south south north south south
+</p>
+</div>
+
+<div class="segment" id="0_38">
+<p>
+thursday three thursday four six
+</p>
+</div>
+
+<div class="segment" id="0_39">
+<p>
+south south south north south
+</p>
+</div>
+
+<div class="segment" id="0_40">
+<p>
+saturday monday tuesday south south
+</p>
+</div>
+
+<div class="segment" id="0_41">
+<p>
+one four three three three
+</p>
+</div>
+
+<div class="segment" id="0_42">
+<p>
+tuesday tuesday six friday three
+</p>
+</div>
+
+<div class="segment" id="0_43">
+<p>
+cat dog cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_44">
+<p>
+south south east east south
+</p>
+</div>
+
+<div class="segment" id="0_45">
+<p>
+three four four six three
+</p>
+</div>
+
+<div class="segment" id="0_46">
+<p>
+saturday friday monday thursday friday
+</p>
+</div>
+
+<div class="segment" id="0_47">
+<p>
+south north north south north
+</p>
+</div>
+
+<div class="segment" id="0_48">
+<p>
+saturday tuesday tuesday tuesday thursday
+</p>
+</div>
+
+<div class="segment" id="0_49">
+<p>
+tuesday tuesday saturday friday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_50">
+<p>
+three three six six six
+</p>
+</div>
+
+<div class="segment" id="0_51">
+<p>
+cat moose cat moose moose
+</p>
+</div>
+
+<div class="segment" id="0_52">
+<p>
+south south east south south
+</p>
+</div>
+
+<div class="segment" id="0_53">
+<p>
+south south cat south south
+</p>
+</div>
+
+<div class="segment" id="0_54">
+<p>
+broom broom broom broom five
+</p>
+</div>
+
+<div class="segment" id="0_55">
+<p>
+south south south north north
+</p>
+</div>
+
+<div class="segment" id="0_56">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_57">
+<p>
+broom mop broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_58">
+<p>
+monday thursday friday friday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_59">
+<p>
+six six four three three
+</p>
+</div>
+
+<div class="segment" id="0_60">
+<p>
+friday tuesday saturday saturday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_61">
+<p>
+cat moose dog cat cat
+</p>
+</div>
+
+<div class="segment" id="0_62">
+<p>
+two three four six six
+</p>
+</div>
+
+<div class="segment" id="0_63">
+<p>
+south south north south north
+</p>
+</div>
+
+<div class="segment" id="0_64">
+<p>
+south south south south north
+</p>
+</div>
+
+<div class="segment" id="0_65">
+<p>
+butterfly moose cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_66">
+<p>
+bucket broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_67">
+<p>
+tuesday friday tuesday tuesday saturday
+</p>
+</div>
+
+<div class="segment" id="0_68">
+<p>
+cat cat moose cat cat
+</p>
+</div>
+
+<div class="segment" id="0_69">
+<p>
+monday saturday thursday friday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_70">
+<p>
+south south south north south
+</p>
+</div>
+
+<div class="segment" id="0_71">
+<p>
+cat cat north south cat
+</p>
+</div>
+
+<div class="segment" id="0_72">
+<p>
+six six one one three
+</p>
+</div>
+
+<div class="segment" id="0_73">
+<p>
+three four one five six
+</p>
+</div>
+
+<div class="segment" id="0_74">
+<p>
+saturday tuesday monday thursday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_75">
+<p>
+five dog cat cat moose
+</p>
+</div>
+
+<div class="segment" id="0_76">
+<p>
+broom broom mop broom broom
+</p>
+</div>
+
+<div class="segment" id="0_77">
+<p>
+cat moose cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_78">
+<p>
+broom broom broom mop broom
+</p>
+</div>
+
+<div class="segment" id="0_79">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_80">
+<p>
+cat cat dog cat cat
+</p>
+</div>
+
+<div class="segment" id="0_81">
+<p>
+broom mop broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_82">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_83">
+<p>
+four three four six mop
+</p>
+</div>
+
+<div class="segment" id="0_84">
+<p>
+cat moose cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_85">
+<p>
+four three two four four
+</p>
+</div>
+
+<div class="segment" id="0_86">
+<p>
+five four three six five
+</p>
+</div>
+
+<div class="segment" id="0_87">
+<p>
+broom broom broom mop mop
+</p>
+</div>
+
+<div class="segment" id="0_88">
+<p>
+tuesday thursday tuesday tuesday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_89">
+<p>
+three four three four four
+</p>
+</div>
+
+<div class="segment" id="0_90">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_91">
+<p>
+butterfly cat cat butterfly cat
+</p>
+</div>
+
+<div class="segment" id="0_92">
+<p>
+saturday saturday tuesday friday saturday
+</p>
+</div>
+
+<div class="segment" id="0_93">
+<p>
+south north north south south
+</p>
+</div>
+
+<div class="segment" id="0_94">
+<p>
+broom broom broom broom mop
+</p>
+</div>
+
+<div class="segment" id="0_95">
+<p>
+friday friday thursday saturday friday
+</p>
+</div>
+
+<div class="segment" id="0_96">
+<p>
+thursday tuesday friday monday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_97">
+<p>
+friday thursday cat friday cat
+</p>
+</div>
+
+<div class="segment" id="0_98">
+<p>
+south south broom south north
+</p>
+</div>
+
+<div class="segment" id="0_99">
+<p>
+south north north south south
+</p>
+</div>
+
+<div class="segment" id="0_100">
+<p>
+monday tuesday tuesday tuesday monday
+</p>
+</div>
+
+<div class="segment" id="0_101">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_102">
+<p>
+broom broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_103">
+<p>
+three three four four three
+</p>
+</div>
+
+<div class="segment" id="0_104">
+<p>
+south south south south north
+</p>
+</div>
+
+<div class="segment" id="0_105">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_106">
+<p>
+mop broom broom one broom
+</p>
+</div>
+
+<div class="segment" id="0_107">
+<p>
+tuesday saturday friday thursday friday
+</p>
+</div>
+
+<div class="segment" id="0_108">
+<p>
+south south south west south
+</p>
+</div>
+
+<div class="segment" id="0_109">
+<p>
+dog mop cat moose cat
+</p>
+</div>
+
+<div class="segment" id="0_110">
+<p>
+two four six four four
+</p>
+</div>
+
+<div class="segment" id="0_111">
+<p>
+south east south south north
+</p>
+</div>
+
+<div class="segment" id="0_112">
+<p>
+six five four four three
+</p>
+</div>
+
+<div class="segment" id="0_113">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_114">
+<p>
+four six four four three
+</p>
+</div>
+
+<div class="segment" id="0_115">
+<p>
+cat saturday friday cat cat
+</p>
+</div>
+
+<div class="segment" id="0_116">
+<p>
+six six moose one five
+</p>
+</div>
+
+<div class="segment" id="0_117">
+<p>
+four four broom one four
+</p>
+</div>
+
+<div class="segment" id="0_118">
+<p>
+tuesday monday tuesday saturday thursday
+</p>
+</div>
+
+<div class="segment" id="0_119">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_120">
+<p>
+east monday north south south
+</p>
+</div>
+
+<div class="segment" id="0_121">
+<p>
+mop broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_122">
+<p>
+east south south south south
+</p>
+</div>
+
+<div class="segment" id="0_123">
+<p>
+broom broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_124">
+<p>
+mop broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_125">
+<p>
+mop mop broom broom mop
+</p>
+</div>
+
+<div class="segment" id="0_126">
+<p>
+south broom south cat south
+</p>
+</div>
+
+<div class="segment" id="0_127">
+<p>
+three four three one four
+</p>
+</div>
+
+<div class="segment" id="0_128">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_129">
+<p>
+five cat three two moose
+</p>
+</div>
+
+<div class="segment" id="0_130">
+<p>
+south one north west south
+</p>
+</div>
+
+<div class="segment" id="0_131">
+<p>
+three six three six three
+</p>
+</div>
+
+<div class="segment" id="0_132">
+<p>
+north north south north north
+</p>
+</div>
+
+<div class="segment" id="0_133">
+<p>
+north four south south east
+</p>
+</div>
+
+<div class="segment" id="0_134">
+<p>
+four three four four five
+</p>
+</div>
+
+<div class="segment" id="0_135">
+<p>
+south north south north south
+</p>
+</div>
+
+<div class="segment" id="0_136">
+<p>
+tuesday friday friday friday monday
+</p>
+</div>
+
+<div class="segment" id="0_137">
+<p>
+moose moose moose moose south
+</p>
+</div>
+
+<div class="segment" id="0_138">
+<p>
+saturday broom monday mop tuesday
+</p>
+</div>
+
+<div class="segment" id="0_139">
+<p>
+broom mop broom bucket broom
+</p>
+</div>
+
+<div class="segment" id="0_140">
+<p>
+six three six six six
+</p>
+</div>
+
+<div class="segment" id="0_141">
+<p>
+cat cat moose cat cat
+</p>
+</div>
+
+<div class="segment" id="0_142">
+<p>
+saturday friday tuesday monday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_143">
+<p>
+broom broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_144">
+<p>
+four six five four four
+</p>
+</div>
+
+<div class="segment" id="0_145">
+<p>
+cat moose cat broom broom
+</p>
+</div>
+
+<div class="segment" id="0_146">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_147">
+<p>
+tuesday friday monday friday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_148">
+<p>
+three three four four three
+</p>
+</div>
+
+<div class="segment" id="0_149">
+<p>
+broom broom broom broom mop
+</p>
+</div>
+
+<div class="segment" id="0_150">
+<p>
+six one four five two
+</p>
+</div>
+
+<div class="segment" id="0_151">
+<p>
+tuesday thursday tuesday monday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_152">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_153">
+<p>
+cat cat moose cat cat
+</p>
+</div>
+
+<div class="segment" id="0_154">
+<p>
+north south north south south
+</p>
+</div>
+
+<div class="segment" id="0_155">
+<p>
+tuesday saturday monday monday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_156">
+<p>
+thursday friday friday saturday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_157">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_158">
+<p>
+four two six three three
+</p>
+</div>
+
+<div class="segment" id="0_159">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_160">
+<p>
+broom mop mop bucket broom
+</p>
+</div>
+
+<div class="segment" id="0_161">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_162">
+<p>
+moose cat dog south cat
+</p>
+</div>
+
+<div class="segment" id="0_163">
+<p>
+one saturday four four one
+</p>
+</div>
+
+<div class="segment" id="0_164">
+<p>
+three two four four three
+</p>
+</div>
+
+<div class="segment" id="0_165">
+<p>
+cat cat six moose one
+</p>
+</div>
+
+<div class="segment" id="0_166">
+<p>
+south south south north north
+</p>
+</div>
+
+<div class="segment" id="0_167">
+<p>
+cat dog cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_168">
+<p>
+broom mop mop broom broom
+</p>
+</div>
+
+<div class="segment" id="0_169">
+<p>
+friday monday saturday monday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_170">
+<p>
+south north north south south
+</p>
+</div>
+
+<div class="segment" id="0_171">
+<p>
+broom mop broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_172">
+<p>
+cat cat dog cat friday
+</p>
+</div>
+
+<div class="segment" id="0_173">
+<p>
+friday monday saturday saturday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_174">
+<p>
+tuesday monday thursday friday thursday
+</p>
+</div>
+
+<div class="segment" id="0_175">
+<p>
+five one six four four
+</p>
+</div>
+
+<div class="segment" id="0_176">
+<p>
+one three three four three
+</p>
+</div>
+
+<div class="segment" id="0_177">
+<p>
+saturday friday friday thursday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_178">
+<p>
+three three five four five
+</p>
+</div>
+
+<div class="segment" id="0_179">
+<p>
+broom broom broom rake mop
+</p>
+</div>
+
+<div class="segment" id="0_180">
+<p>
+south north south north moose
+</p>
+</div>
+
+<div class="segment" id="0_181">
+<p>
+friday saturday friday tuesday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_182">
+<p>
+monday saturday south friday south
+</p>
+</div>
+
+<div class="segment" id="0_183">
+<p>
+cat moose south cat moose
+</p>
+</div>
+
+<div class="segment" id="0_184">
+<p>
+tuesday friday friday thursday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_185">
+<p>
+south south south south east
+</p>
+</div>
+
+<div class="segment" id="0_186">
+<p>
+five six four three six
+</p>
+</div>
+
+<div class="segment" id="0_187">
+<p>
+cat butterfly cat cat moose
+</p>
+</div>
+
+<div class="segment" id="0_188">
+<p>
+saturday saturday friday tuesday friday
+</p>
+</div>
+
+<div class="segment" id="0_189">
+<p>
+tuesday saturday tuesday monday saturday
+</p>
+</div>
+
+<div class="segment" id="0_190">
+<p>
+five four four three four
+</p>
+</div>
+
+<div class="segment" id="0_191">
+<p>
+south south south west south
+</p>
+</div>
+
+<div class="segment" id="0_192">
+<p>
+friday friday tuesday thursday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_193">
+<p>
+south south north south south
+</p>
+</div>
+
+<div class="segment" id="0_194">
+<p>
+cat cat cat cat moose
+</p>
+</div>
+
+<div class="segment" id="0_195">
+<p>
+mop broom broom broom mop
+</p>
+</div>
+
+<div class="segment" id="0_196">
+<p>
+north west south south south
+</p>
+</div>
+
+<div class="segment" id="0_197">
+<p>
+north south south south south
+</p>
+</div>
+
+<div class="segment" id="0_198">
+<p>
+mop broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_199">
+<p>
+mop broom broom mop broom
+</p>
+</div>
+
+<div class="segment" id="0_200">
+<p>
+six one four five four
+</p>
+</div>
+
+<div class="segment" id="0_201">
+<p>
+six four three four five
+</p>
+</div>
+
+<div class="segment" id="0_202">
+<p>
+broom broom mop mop broom
+</p>
+</div>
+
+<div class="segment" id="0_203">
+<p>
+south south south north south
+</p>
+</div>
+
+<div class="segment" id="0_204">
+<p>
+tuesday monday saturday tuesday friday
+</p>
+</div>
+
+<div class="segment" id="0_205">
+<p>
+six five four three one
+</p>
+</div>
+
+<div class="segment" id="0_206">
+<p>
+mop broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_207">
+<p>
+friday saturday tuesday monday saturday
+</p>
+</div>
+
+<div class="segment" id="0_208">
+<p>
+six four four four three
+</p>
+</div>
+
+<div class="segment" id="0_209">
+<p>
+thursday tuesday monday thursday friday
+</p>
+</div>
+
+<div class="segment" id="0_210">
+<p>
+tuesday tuesday friday thursday saturday
+</p>
+</div>
+
+<div class="segment" id="0_211">
+<p>
+broom broom bucket mop broom
+</p>
+</div>
+
+<div class="segment" id="0_212">
+<p>
+cat cat cat south moose
+</p>
+</div>
+
+<div class="segment" id="0_213">
+<p>
+monday tuesday saturday monday saturday
+</p>
+</div>
+
+<div class="segment" id="0_214">
+<p>
+south south south north south
+</p>
+</div>
+
+<div class="segment" id="0_215">
+<p>
+north south north south south
+</p>
+</div>
+
+<div class="segment" id="0_216">
+<p>
+south north south south north
+</p>
+</div>
+
+<div class="segment" id="0_217">
+<p>
+three three three five one
+</p>
+</div>
+
+<div class="segment" id="0_218">
+<p>
+broom broom broom cat cat
+</p>
+</div>
+
+<div class="segment" id="0_219">
+<p>
+broom broom broom mop broom
+</p>
+</div>
+
+<div class="segment" id="0_220">
+<p>
+friday friday monday friday friday
+</p>
+</div>
+
+<div class="segment" id="0_221">
+<p>
+south south south north north
+</p>
+</div>
+
+<div class="segment" id="0_222">
+<p>
+south north south south north
+</p>
+</div>
+
+<div class="segment" id="0_223">
+<p>
+monday tuesday tuesday friday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_224">
+<p>
+mop broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_225">
+<p>
+thursday thursday thursday monday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_226">
+<p>
+monday tuesday friday tuesday friday
+</p>
+</div>
+
+<div class="segment" id="0_227">
+<p>
+four four four one one
+</p>
+</div>
+
+<div class="segment" id="0_228">
+<p>
+three three four four one
+</p>
+</div>
+
+<div class="segment" id="0_229">
+<p>
+six six three five four
+</p>
+</div>
+
+<div class="segment" id="0_230">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_231">
+<p>
+broom broom mop broom broom
+</p>
+</div>
+
+<div class="segment" id="0_232">
+<p>
+broom broom mop broom broom
+</p>
+</div>
+
+<div class="segment" id="0_233">
+<p>
+south south south north south
+</p>
+</div>
+
+<div class="segment" id="0_234">
+<p>
+broom broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_235">
+<p>
+one four six two two
+</p>
+</div>
+
+<div class="segment" id="0_236">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_237">
+<p>
+rake broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_238">
+<p>
+saturday tuesday friday thursday monday
+</p>
+</div>
+
+<div class="segment" id="0_239">
+<p>
+three six five one four
+</p>
+</div>
+
+<div class="segment" id="0_240">
+<p>
+friday friday friday thursday saturday
+</p>
+</div>
+
+<div class="segment" id="0_241">
+<p>
+three four four six six
+</p>
+</div>
+
+<div class="segment" id="0_242">
+<p>
+thursday thursday tuesday friday friday
+</p>
+</div>
+
+<div class="segment" id="0_243">
+<p>
+cat cat butterfly cat cat
+</p>
+</div>
+
+<div class="segment" id="0_244">
+<p>
+south south south north south
+</p>
+</div>
+
+<div class="segment" id="0_245">
+<p>
+mop broom broom mop broom
+</p>
+</div>
+
+<div class="segment" id="0_246">
+<p>
+one six three south five
+</p>
+</div>
+
+<div class="segment" id="0_247">
+<p>
+monday tuesday friday tuesday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_248">
+<p>
+four one six two one
+</p>
+</div>
+
+<div class="segment" id="0_249">
+<p>
+six six one three four
+</p>
+</div>
+
+<div class="segment" id="0_250">
+<p>
+mop broom broom mop broom
+</p>
+</div>
+
+<div class="segment" id="0_251">
+<p>
+rake broom broom mop mop
+</p>
+</div>
+
+<div class="segment" id="0_252">
+<p>
+mop broom mop mop mop
+</p>
+</div>
+
+<div class="segment" id="0_253">
+<p>
+broom broom mop broom bucket
+</p>
+</div>
+
+<div class="segment" id="0_254">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_255">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_256">
+<p>
+monday tuesday monday tuesday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_257">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_258">
+<p>
+cat cat cat moose moose
+</p>
+</div>
+
+<div class="segment" id="0_259">
+<p>
+friday tuesday monday thursday thursday
+</p>
+</div>
+
+<div class="segment" id="0_260">
+<p>
+one one four north south
+</p>
+</div>
+
+<div class="segment" id="0_261">
+<p>
+monday tuesday tuesday tuesday friday
+</p>
+</div>
+
+<div class="segment" id="0_262">
+<p>
+three four four six six
+</p>
+</div>
+
+<div class="segment" id="0_263">
+<p>
+broom broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_264">
+<p>
+west south south south east
+</p>
+</div>
+
+<div class="segment" id="0_265">
+<p>
+broom broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_266">
+<p>
+mop broom tuesday friday broom
+</p>
+</div>
+
+<div class="segment" id="0_267">
+<p>
+cat cat cat moose dog
+</p>
+</div>
+
+<div class="segment" id="0_268">
+<p>
+south south south mop mop
+</p>
+</div>
+
+<div class="segment" id="0_269">
+<p>
+north south south south north
+</p>
+</div>
+
+<div class="segment" id="0_270">
+<p>
+tuesday monday thursday friday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_271">
+<p>
+broom mop broom broom rake
+</p>
+</div>
+
+<div class="segment" id="0_272">
+<p>
+tuesday tuesday monday tuesday saturday
+</p>
+</div>
+
+<div class="segment" id="0_273">
+<p>
+south south east north west
+</p>
+</div>
+
+<div class="segment" id="0_274">
+<p>
+south north south north south
+</p>
+</div>
+
+<div class="segment" id="0_275">
+<p>
+six three one six six
+</p>
+</div>
+
+<div class="segment" id="0_276">
+<p>
+friday four tuesday tuesday saturday
+</p>
+</div>
+
+<div class="segment" id="0_277">
+<p>
+broom broom mop mop broom
+</p>
+</div>
+
+<div class="segment" id="0_278">
+<p>
+one four four six one
+</p>
+</div>
+
+<div class="segment" id="0_279">
+<p>
+moose cat cat butterfly cat
+</p>
+</div>
+
+<div class="segment" id="0_280">
+<p>
+thursday tuesday friday tuesday monday
+</p>
+</div>
+
+<div class="segment" id="0_281">
+<p>
+mop broom broom broom rake
+</p>
+</div>
+
+<div class="segment" id="0_282">
+<p>
+friday thursday saturday thursday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_283">
+<p>
+friday thursday saturday friday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_284">
+<p>
+three south south six south
+</p>
+</div>
+
+<div class="segment" id="0_285">
+<p>
+friday saturday friday tuesday thursday
+</p>
+</div>
+
+<div class="segment" id="0_286">
+<p>
+cat moose cat cat moose
+</p>
+</div>
+
+<div class="segment" id="0_287">
+<p>
+six four five south one
+</p>
+</div>
+
+<div class="segment" id="0_288">
+<p>
+four one one one three
+</p>
+</div>
+
+<div class="segment" id="0_289">
+<p>
+broom broom broom mop mop
+</p>
+</div>
+
+<div class="segment" id="0_290">
+<p>
+cat north south cat cat
+</p>
+</div>
+
+<div class="segment" id="0_291">
+<p>
+south west south south north
+</p>
+</div>
+
+<div class="segment" id="0_292">
+<p>
+broom mop broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_293">
+<p>
+south east south south south
+</p>
+</div>
+
+<div class="segment" id="0_294">
+<p>
+dog cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_295">
+<p>
+tuesday thursday friday saturday saturday
+</p>
+</div>
+
+<div class="segment" id="0_296">
+<p>
+tuesday monday thursday monday friday
+</p>
+</div>
+
+<div class="segment" id="0_297">
+<p>
+moose cat cat cat moose
+</p>
+</div>
+
+<div class="segment" id="0_298">
+<p>
+mop mop mop broom broom
+</p>
+</div>
+
+<div class="segment" id="0_299">
+<p>
+five six three four one
+</p>
+</div>
+
+<div class="segment" id="0_300">
+<p>
+cat cat dog cat cat
+</p>
+</div>
+
+<div class="segment" id="0_301">
+<p>
+broom mop mop broom broom
+</p>
+</div>
+
+<div class="segment" id="0_302">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_303">
+<p>
+cat moose cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_304">
+<p>
+cat cat cat cat moose
+</p>
+</div>
+
+<div class="segment" id="0_305">
+<p>
+north thursday tuesday south friday
+</p>
+</div>
+
+<div class="segment" id="0_306">
+<p>
+broom broom broom broom saturday
+</p>
+</div>
+
+<div class="segment" id="0_307">
+<p>
+cat cat dog cat cat
+</p>
+</div>
+
+<div class="segment" id="0_308">
+<p>
+four three three five three
+</p>
+</div>
+
+<div class="segment" id="0_309">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_310">
+<p>
+saturday tuesday saturday tuesday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_311">
+<p>
+cat moose cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_312">
+<p>
+cat butterfly cat dog cat
+</p>
+</div>
+
+<div class="segment" id="0_313">
+<p>
+tuesday friday tuesday monday friday
+</p>
+</div>
+
+<div class="segment" id="0_314">
+<p>
+south south three one four
+</p>
+</div>
+
+<div class="segment" id="0_315">
+<p>
+cat moose cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_316">
+<p>
+four six one three three
+</p>
+</div>
+
+<div class="segment" id="0_317">
+<p>
+cat moose cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_318">
+<p>
+cat moose moose cat moose
+</p>
+</div>
+
+<div class="segment" id="0_319">
+<p>
+south south south south mop
+</p>
+</div>
+
+<div class="segment" id="0_320">
+<p>
+broom broom broom broom mop
+</p>
+</div>
+
+<div class="segment" id="0_321">
+<p>
+thursday tuesday monday tuesday thursday
+</p>
+</div>
+
+<div class="segment" id="0_322">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_323">
+<p>
+cat cat cat cat moose
+</p>
+</div>
+
+<div class="segment" id="0_324">
+<p>
+south north south south south
+</p>
+</div>
+
+<div class="segment" id="0_325">
+<p>
+tuesday tuesday friday monday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_326">
+<p>
+south south south west north
+</p>
+</div>
+
+<div class="segment" id="0_327">
+<p>
+broom broom broom mop broom
+</p>
+</div>
+
+<div class="segment" id="0_328">
+<p>
+saturday thursday tuesday saturday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_329">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_330">
+<p>
+four five six four four
+</p>
+</div>
+
+<div class="segment" id="0_331">
+<p>
+five five six three six
+</p>
+</div>
+
+<div class="segment" id="0_332">
+<p>
+south four south north one
+</p>
+</div>
+
+<div class="segment" id="0_333">
+<p>
+three three four five five
+</p>
+</div>
+
+<div class="segment" id="0_334">
+<p>
+tuesday friday thursday tuesday saturday
+</p>
+</div>
+
+<div class="segment" id="0_335">
+<p>
+south south north south north
+</p>
+</div>
+
+<div class="segment" id="0_336">
+<p>
+broom broom mop mop broom
+</p>
+</div>
+
+<div class="segment" id="0_337">
+<p>
+saturday tuesday friday friday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_338">
+<p>
+tuesday tuesday tuesday saturday monday
+</p>
+</div>
+
+<div class="segment" id="0_339">
+<p>
+moose cat moose cat cat
+</p>
+</div>
+
+<div class="segment" id="0_340">
+<p>
+south three four six north
+</p>
+</div>
+
+<div class="segment" id="0_341">
+<p>
+broom broom mop broom broom
+</p>
+</div>
+
+<div class="segment" id="0_342">
+<p>
+monday thursday friday broom friday
+</p>
+</div>
+
+<div class="segment" id="0_343">
+<p>
+cat north south north north
+</p>
+</div>
+
+<div class="segment" id="0_344">
+<p>
+south north east north south
+</p>
+</div>
+
+<div class="segment" id="0_345">
+<p>
+cat cat cat cat moose
+</p>
+</div>
+
+<div class="segment" id="0_346">
+<p>
+north south south north south
+</p>
+</div>
+
+<div class="segment" id="0_347">
+<p>
+four six six three three
+</p>
+</div>
+
+<div class="segment" id="0_348">
+<p>
+broom broom broom broom mop
+</p>
+</div>
+
+<div class="segment" id="0_349">
+<p>
+moose cat cat butterfly cat
+</p>
+</div>
+
+<div class="segment" id="0_350">
+<p>
+west north west east south
+</p>
+</div>
+
+<div class="segment" id="0_351">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_352">
+<p>
+cat moose cat moose dog
+</p>
+</div>
+
+<div class="segment" id="0_353">
+<p>
+three four four three one
+</p>
+</div>
+
+<div class="segment" id="0_354">
+<p>
+south south east south south
+</p>
+</div>
+
+<div class="segment" id="0_355">
+<p>
+south north south north south
+</p>
+</div>
+
+<div class="segment" id="0_356">
+<p>
+monday moose dog tuesday cat
+</p>
+</div>
+
+<div class="segment" id="0_357">
+<p>
+broom broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_358">
+<p>
+south south south east south
+</p>
+</div>
+
+<div class="segment" id="0_359">
+<p>
+south west south east south
+</p>
+</div>
+
+<div class="segment" id="0_360">
+<p>
+broom south broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_361">
+<p>
+north north cat south south
+</p>
+</div>
+
+<div class="segment" id="0_362">
+<p>
+south south south north east
+</p>
+</div>
+
+<div class="segment" id="0_363">
+<p>
+tuesday friday thursday monday friday
+</p>
+</div>
+
+<div class="segment" id="0_364">
+<p>
+friday tuesday thursday monday friday
+</p>
+</div>
+
+<div class="segment" id="0_365">
+<p>
+cat cat cat dog cat
+</p>
+</div>
+
+<div class="segment" id="0_366">
+<p>
+broom mop mop broom mop
+</p>
+</div>
+
+<div class="segment" id="0_367">
+<p>
+friday thursday tuesday thursday saturday
+</p>
+</div>
+
+<div class="segment" id="0_368">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_369">
+<p>
+three four five three south
+</p>
+</div>
+
+<div class="segment" id="0_370">
+<p>
+thursday tuesday monday saturday friday
+</p>
+</div>
+
+<div class="segment" id="0_371">
+<p>
+monday monday mop broom broom
+</p>
+</div>
+
+<div class="segment" id="0_372">
+<p>
+cat moose cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_373">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_374">
+<p>
+friday saturday tuesday friday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_375">
+<p>
+broom broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_376">
+<p>
+two one one three five
+</p>
+</div>
+
+<div class="segment" id="0_377">
+<p>
+mop bucket mop mop mop
+</p>
+</div>
+
+<div class="segment" id="0_378">
+<p>
+broom broom mop broom mop
+</p>
+</div>
+
+<div class="segment" id="0_379">
+<p>
+monday saturday saturday tuesday friday
+</p>
+</div>
+
+<div class="segment" id="0_380">
+<p>
+broom mop broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_381">
+<p>
+north south north south south
+</p>
+</div>
+
+<div class="segment" id="0_382">
+<p>
+cat moose dog cat cat
+</p>
+</div>
+
+<div class="segment" id="0_383">
+<p>
+four three three three three
+</p>
+</div>
+
+<div class="segment" id="0_384">
+<p>
+tuesday friday monday friday friday
+</p>
+</div>
+
+<div class="segment" id="0_385">
+<p>
+cat cat cat cat moose
+</p>
+</div>
+
+<div class="segment" id="0_386">
+<p>
+cat cat moose cat moose
+</p>
+</div>
+
+<div class="segment" id="0_387">
+<p>
+north south south south moose
+</p>
+</div>
+
+<div class="segment" id="0_388">
+<p>
+four four four four four
+</p>
+</div>
+
+<div class="segment" id="0_389">
+<p>
+cat cat dog moose cat
+</p>
+</div>
+
+<div class="segment" id="0_390">
+<p>
+four four six six five
+</p>
+</div>
+
+<div class="segment" id="0_391">
+<p>
+three one four four one
+</p>
+</div>
+
+<div class="segment" id="0_392">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_393">
+<p>
+tuesday saturday monday thursday friday
+</p>
+</div>
+
+<div class="segment" id="0_394">
+<p>
+six five four three three
+</p>
+</div>
+
+<div class="segment" id="0_395">
+<p>
+broom broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_396">
+<p>
+cat cat cat butterfly moose
+</p>
+</div>
+
+<div class="segment" id="0_397">
+<p>
+five five one one four
+</p>
+</div>
+
+<div class="segment" id="0_398">
+<p>
+moose cat moose cat cat
+</p>
+</div>
+
+<div class="segment" id="0_399">
+<p>
+thursday thursday monday thursday saturday
+</p>
+</div>
+
+<div class="segment" id="0_400">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_401">
+<p>
+broom broom broom broom cat
+</p>
+</div>
+
+<div class="segment" id="0_402">
+<p>
+tuesday monday monday tuesday monday
+</p>
+</div>
+
+<div class="segment" id="0_403">
+<p>
+four four four six three
+</p>
+</div>
+
+<div class="segment" id="0_404">
+<p>
+broom moose broom cat cat
+</p>
+</div>
+
+<div class="segment" id="0_405">
+<p>
+mop broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_406">
+<p>
+friday tuesday monday friday friday
+</p>
+</div>
+
+<div class="segment" id="0_407">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_408">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_409">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_410">
+<p>
+tuesday tuesday saturday friday friday
+</p>
+</div>
+
+<div class="segment" id="0_411">
+<p>
+four one six five five
+</p>
+</div>
+
+<div class="segment" id="0_412">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_413">
+<p>
+six six six thursday broom
+</p>
+</div>
+
+<div class="segment" id="0_414">
+<p>
+broom broom rake broom bucket
+</p>
+</div>
+
+<div class="segment" id="0_415">
+<p>
+monday monday saturday tuesday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_416">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_417">
+<p>
+south east mop south south
+</p>
+</div>
+
+<div class="segment" id="0_418">
+<p>
+two south north six four
+</p>
+</div>
+
+<div class="segment" id="0_419">
+<p>
+moose cat cat moose south
+</p>
+</div>
+
+<div class="segment" id="0_420">
+<p>
+six five six six one
+</p>
+</div>
+
+<div class="segment" id="0_421">
+<p>
+thursday friday thursday friday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_422">
+<p>
+monday thursday monday monday monday
+</p>
+</div>
+
+<div class="segment" id="0_423">
+<p>
+monday tuesday tuesday friday tuesday
+</p>
+</div>
+
+<div class="segment" id="0_424">
+<p>
+mop mop broom broom mop
+</p>
+</div>
+
+<div class="segment" id="0_425">
+<p>
+mop mop broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_426">
+<p>
+six four one five four
+</p>
+</div>
+
+<div class="segment" id="0_427">
+<p>
+tuesday friday saturday tuesday saturday
+</p>
+</div>
+
+<div class="segment" id="0_428">
+<p>
+cat cat dog cat cat
+</p>
+</div>
+
+<div class="segment" id="0_429">
+<p>
+five four one cat three
+</p>
+</div>
+
+<div class="segment" id="0_430">
+<p>
+south north north south south
+</p>
+</div>
+
+<div class="segment" id="0_431">
+<p>
+cat moose cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_432">
+<p>
+mop broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_433">
+<p>
+six cat one three four
+</p>
+</div>
+
+<div class="segment" id="0_434">
+<p>
+cat cat cat cat moose
+</p>
+</div>
+
+<div class="segment" id="0_435">
+<p>
+saturday friday saturday friday monday
+</p>
+</div>
+
+<div class="segment" id="0_436">
+<p>
+broom mop broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_437">
+<p>
+north south south south south
+</p>
+</div>
+
+<div class="segment" id="0_438">
+<p>
+broom broom mop broom mop
+</p>
+</div>
+
+<div class="segment" id="0_439">
+<p>
+south east north south south
+</p>
+</div>
+
+<div class="segment" id="0_440">
+<p>
+broom broom mop broom broom
+</p>
+</div>
+
+<div class="segment" id="0_441">
+<p>
+six four one four three
+</p>
+</div>
+
+<div class="segment" id="0_442">
+<p>
+east north south north south
+</p>
+</div>
+
+<div class="segment" id="0_443">
+<p>
+tuesday tuesday friday monday saturday
+</p>
+</div>
+
+<div class="segment" id="0_444">
+<p>
+east south south north south
+</p>
+</div>
+
+<div class="segment" id="0_445">
+<p>
+rake mop broom broom rake
+</p>
+</div>
+
+<div class="segment" id="0_446">
+<p>
+broom mop broom broom mop
+</p>
+</div>
+
+<div class="segment" id="0_447">
+<p>
+four four six four one
+</p>
+</div>
+
+<div class="segment" id="0_448">
+<p>
+four four three four four
+</p>
+</div>
+
+<div class="segment" id="0_449">
+<p>
+saturday thursday tuesday tuesday saturday
+</p>
+</div>
+
+<div class="segment" id="0_450">
+<p>
+mop broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_451">
+<p>
+thursday friday monday tuesday thursday
+</p>
+</div>
+
+<div class="segment" id="0_452">
+<p>
+broom broom broom broom mop
+</p>
+</div>
+
+<div class="segment" id="0_453">
+<p>
+friday tuesday tuesday thursday friday
+</p>
+</div>
+
+<div class="segment" id="0_454">
+<p>
+six three three broom six
+</p>
+</div>
+
+<div class="segment" id="0_455">
+<p>
+cat cat cat cat moose
+</p>
+</div>
+
+<div class="segment" id="0_456">
+<p>
+cat north moose saturday cat
+</p>
+</div>
+
+<div class="segment" id="0_457">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_458">
+<p>
+four south south three six
+</p>
+</div>
+
+<div class="segment" id="0_459">
+<p>
+broom mop broom broom mop
+</p>
+</div>
+
+<div class="segment" id="0_460">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_461">
+<p>
+broom broom mop broom broom
+</p>
+</div>
+
+<div class="segment" id="0_462">
+<p>
+tuesday monday friday friday monday
+</p>
+</div>
+
+<div class="segment" id="0_463">
+<p>
+south south north south south
+</p>
+</div>
+
+<div class="segment" id="0_464">
+<p>
+four one three one three
+</p>
+</div>
+
+<div class="segment" id="0_465">
+<p>
+mop mop broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_466">
+<p>
+cat cat cat moose cat
+</p>
+</div>
+
+<div class="segment" id="0_467">
+<p>
+broom broom mop broom broom
+</p>
+</div>
+
+<div class="segment" id="0_468">
+<p>
+four six one six six
+</p>
+</div>
+
+<div class="segment" id="0_469">
+<p>
+four one six four four
+</p>
+</div>
+
+<div class="segment" id="0_470">
+<p>
+north south south south south
+</p>
+</div>
+
+<div class="segment" id="0_471">
+<p>
+cat cat cat cat butterfly
+</p>
+</div>
+
+<div class="segment" id="0_472">
+<p>
+broom mop mop broom broom
+</p>
+</div>
+
+<div class="segment" id="0_473">
+<p>
+broom broom broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_474">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_475">
+<p>
+friday four friday one tuesday
+</p>
+</div>
+
+<div class="segment" id="0_476">
+<p>
+monday saturday saturday tuesday saturday
+</p>
+</div>
+
+<div class="segment" id="0_477">
+<p>
+south north south south south
+</p>
+</div>
+
+<div class="segment" id="0_478">
+<p>
+south west south south north
+</p>
+</div>
+
+<div class="segment" id="0_479">
+<p>
+five one one six one
+</p>
+</div>
+
+<div class="segment" id="0_480">
+<p>
+broom mop broom broom broom
+</p>
+</div>
+
+<div class="segment" id="0_481">
+<p>
+south north south south south
+</p>
+</div>
+
+<div class="segment" id="0_482">
+<p>
+south south north north broom
+</p>
+</div>
+
+<div class="segment" id="0_483">
+<p>
+broom broom broom broom mop
+</p>
+</div>
+
+<div class="segment" id="0_484">
+<p>
+north south south south south
+</p>
+</div>
+
+<div class="segment" id="0_485">
+<p>
+thursday monday friday friday friday
+</p>
+</div>
+
+<div class="segment" id="0_486">
+<p>
+cat moose cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_487">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_488">
+<p>
+cat cat cat cat cat
+</p>
+</div>
+
+<div class="segment" id="0_489">
+<p>
+cat cat cat moose cat
+</p>
+</div>
+
+<div class="segment" id="0_490">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_491">
+<p>
+one one three three three
+</p>
+</div>
+
+<div class="segment" id="0_492">
+<p>
+cat moose cat cat moose
+</p>
+</div>
+
+<div class="segment" id="0_493">
+<p>
+friday monday thursday friday thursday
+</p>
+</div>
+
+<div class="segment" id="0_494">
+<p>
+four one six six five
+</p>
+</div>
+
+<div class="segment" id="0_495">
+<p>
+cat cat dog south cat
+</p>
+</div>
+
+<div class="segment" id="0_496">
+<p>
+saturday tuesday monday saturday friday
+</p>
+</div>
+
+<div class="segment" id="0_497">
+<p>
+mop broom broom broom mop
+</p>
+</div>
+
+<div class="segment" id="0_498">
+<p>
+south south south south south
+</p>
+</div>
+
+<div class="segment" id="0_499">
+<p>
+cat cat moose cat cat
+</p>
+</div>
+
+
+</div>
+
+</body>
+
+</html>

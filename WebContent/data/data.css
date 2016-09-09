@@ -1,0 +1,35 @@
+
+div.transmenu {
+	position: absolute;
+	top: 90%;
+	left: 0%;
+	width: 100%;
+	height: 10%;
+	background-color: #99CCFF;
+	text-align: center;
+}
+
+
+div.transmenu p {
+	margin:20px 20px 20px 20px;
+	font-size: 90%;
+	}
+
+div.main {
+	overflow-x: hidden;
+	overflow-y: auto;
+	top:0%; 
+	width: 100%; 
+	height: 90%;
+}
+
+div.segment {
+	text-align: left;
+	font-family: verdana, monospace;
+	font-size: 90%;
+	border: thin solid gray;
+}
+
+div.segment p {
+	margin: 20px 20px 20px 20px;
+}

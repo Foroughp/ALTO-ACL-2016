@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Interactive Document Labeling</title>
+<meta name="description" content="">
+<meta name="author" content="">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+<script>
+	//local URL
+	var backend = "http://localhost:8080/alto-release";
+	//var backend = "http://annotation-labeling.rhcloud.com/itm-release";
+	
+</script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="http://malsup.github.io/jquery.blockUI.js"></script>
+
+
+<link rel="stylesheet"
+	href="http://code.jquery.com/ui/1.8.22/themes/base/jquery-ui.css"
+	type="text/css" media="all" />
+
+<script src="static/js/tools.js"></script>
+
+<link rel="stylesheet"
+	href="static/libs/bootstrap-1.4.0/bootstrap.min.css">
+<link rel="stylesheet" href="static/css/main.css">
+
+
+<script type="text/javascript"
+	src="static/libs/bootstrap/js/bootstrap-modal.js"></script>
+<script type="text/javascript"
+	src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.3.3/underscore-min.js"></script>
+<script type="text/javascript"
+	src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.2/backbone-min.js"></script>
+	<script type="text/javascript"
+	src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.2/backbone-min.js"></script>
+
+	<script type="text/javascript"
+	src="https://cdn.rawgit.com/bbarakaci/fixto/master/dist/fixto.min.js"></script>
+<style type="text/css"></style>
+
+<script type="text/javascript" charset="utf-8" src="static/js/Label.js"></script>
+<script type="text/javascript" charset="utf-8" src="static/js/main.js"></script>
+<script type="text/javascript" charset="utf-8" src="static/js/log.js"></script>
+
+
+
+<script>
+	//adding navigation confirmation
+	window.onload = function() {
+		mainWindow = window;
+	}
+	window.onbeforeunload = function() {
+		return "You have unsubmitted changes. Please submit all changes first.";
+	}
+	var topicsnum = 0;
+	var corpusname = "";
+	var corpusname = getParameterByName("corpusname");
+	var topicsnum =  getParameterByName("topicsnum");
+	var study_condition = getParameterByName("studycondition");
+	var username = getParameterByName("username");
+	
+	username = username.replace("+", " ");
+	var topic_doc_show_num = 20;
+	var num_baseline_docs = topic_doc_show_num * Number(topicsnum);
+	
+	var newsession = "true";
+
+	// added by yuening
+	var topicwords = {};
+
+	var itm_done = true;
+	var minute = -1;
+	var second = -1;
+	var start_itm = 40;
+	var start_second = 0;
+	var doc_clicked = false;
+
+	$(document).ready(
+			function() {
+				minute = start_itm;
+				second = start_second;
+				load_input(username, study_condition);
+			});
+</script>
+</head>
+
+
+<body id="whole-window">
+	<div class="topbar">
+		<div class="fill">
+			<div class="container">
+				<a class="brand" href="#" id="alt">Interactive Document Labeling</a>
+				<form id="titleform" class="pull-right">
+					<input id="user-name" class="input-small" type="text"
+						style="background-color: transparent" readonly="readonly">
+					<input id="timing" class="input-small" type="text"
+						style="background-color: transparent" readonly="readonly">
+				</form>
+			</div>
+		</div>
+	</div>
+	<div class="container">
+		<div class="content">
+			<table>
+				<tr>
+					<td id="label-col">
+						<form
+							onsubmit="document.getElementById('label-form').value = ''; return false;">
+							<div style="overflow-y: auto; position: fixed; height: 500px"
+								id="main-table">
+								<div id="label-display"
+									style="position: relative; height: 100px; background-color: white"></div>
+
+								<div style="position: relative">
+									<table class="noborder" style="display: inline-block;">
+										<tr>
+											<td colspan="2"><input class="large" id="label-form"
+												placeholder="new label name" name="label-form" size="20"
+												type="text" onkeypress="disableEnableAddLabel()" /></td>
+										</tr>
+										<tr>
+											<td></td>
+											<td><input type="submit" id="label-submit-button"
+												class="btn small primary" value="add label"
+												onclick="addLabel()" 
+												title="adds the label typed in the box to the label list." disabled></td>
+										</tr>
+
+										<tr>
+											<td><input id="edit-label" type="button" disabled
+												class="btn small primary" onclick="editLabel()"
+												value="rename label"
+												title="renames the label for all documents that are labeled with selected label."></td>
+											<td><input id="delete-label" type="button" disabled
+												class="btn small primary" onclick="deleteLabel()"
+												value="delete label"
+												title="deletes the label for all documents that are labeled with selected label."></td>
+										</tr>
+
+										<tr>
+											<td></td>
+											<td></td>
+
+										</tr>
+										<tr>
+											<td></td>
+											<td></td>
+
+										</tr>
+										<tr>
+											<td></td>
+											<td></td>
+
+										</tr>
+										<tr>
+											<td></td>
+											<td></td>
+
+										</tr>
+										<tr>
+											<td colspan="2"><div id="progress-header-div"><b>Covered Themes Progress:</b></div></td>
+										</tr>
+
+										<tr>
+											<td colspan="2">
+													<div id="progress-bar-div" class="progress">
+														<div id="progree-inner-div" class="progress-bar progress-bar-striped"
+															role="progressbar" aria-valuenow="40" aria-valuemin="0"
+															aria-valuemax="100" style="width: 0%">0%</div>
+													</div></td>
+
+										</tr>
+									</table>
+								</div>
+							</div>
+						</form>
+					</td>
+
+					<td id="data-col">
+						<div id="title" class="row table-header">
+							<div class="span4">
+								<h2>Themes</h2>
+							</div>
+							<div class="span12">
+								<h2>Documents</h2>
+							</div>
+						</div>
+
+						<form id="mainform" action="ui.html" method="POST">
+							<div id="mainform_items"></div>
+						</form>
+						<form id="finish" action="ui.html" method="POST"> 
+							<input id="finish_button" type="button" class="btn small primary" disabled
+								onclick="finishLabeling()" value="Finish and submit all labels">
+						</form> <footer id="footer">
+							<p>&copy; This is just a test 2015</p>
+						</footer>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div class="modal hide" id="loading">
+			<div class="modal-body" align="center">
+				<br /> <br />
+				<p id="loading_data">Loading...</p>
+				<img src="static/images/loading.gif"> <br /> <br />
+			</div>
+		</div>
+	</div>
+</body>
+</html>

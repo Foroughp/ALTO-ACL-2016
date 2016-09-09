@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Interactive Document Labeling</title>
+<meta name="description" content="">
+<meta name="author" content="">
+<script src="static/js/tools.js"></script>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+
+<link rel="stylesheet"
+	href="static/libs/bootstrap-1.4.0/bootstrap.min.css">
+<link rel="stylesheet" href="static/css/main.css">
+
+<style type="text/css">
+</style>
+
+<!-- Le fav and touch icons -->
+<link rel="shortcut icon" href="images/favicon.ico">
+<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="72x72"
+	href="images/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="114x114"
+	href="images/apple-touch-icon-114x114.png">
+
+<script type="text/javascript" src="static/js/main.js"></script>
+<script src="http://malsup.github.io/jquery.blockUI.js"></script>
+
+<script type="text/javascript">
+	function getBrowserName() {
+		var nVer = navigator.appVersion;
+		var nAgt = navigator.userAgent;
+		var browserName = navigator.appName;
+		var fullVersion = '' + parseFloat(navigator.appVersion);
+		var majorVersion = parseInt(navigator.appVersion, 10);
+		var nameOffset, verOffset, ix;
+		// In Opera 15+, the true version is after "OPR/" 
+		if ((verOffset = nAgt.indexOf("OPR/")) != -1) {
+			browserName = "Opera";
+			fullVersion = nAgt.substring(verOffset + 4);
+		}
+		// In older Opera, the true version is after "Opera" or after "Version"
+		else if ((verOffset = nAgt.indexOf("Opera")) != -1) {
+			browserName = "Opera";
+			fullVersion = nAgt.substring(verOffset + 6);
+			if ((verOffset = nAgt.indexOf("Version")) != -1)
+				fullVersion = nAgt.substring(verOffset + 8);
+		}
+		// In MSIE, the true version is after "MSIE" in userAgent
+		else if ((verOffset = nAgt.indexOf("MSIE")) != -1) {
+			browserName = "Microsoft Internet Explorer";
+			fullVersion = nAgt.substring(verOffset + 5);
+		}
+		// In Chrome, the true version is after "Chrome" 
+		else if ((verOffset = nAgt.indexOf("Chrome")) != -1) {
+			browserName = "Chrome";
+			fullVersion = nAgt.substring(verOffset + 7);
+		}
+		// In Safari, the true version is after "Safari" or after "Version" 
+		else if ((verOffset = nAgt.indexOf("Safari")) != -1) {
+			browserName = "Safari";
+			fullVersion = nAgt.substring(verOffset + 7);
+			if ((verOffset = nAgt.indexOf("Version")) != -1)
+				fullVersion = nAgt.substring(verOffset + 8);
+		}
+		// In Firefox, the true version is after "Firefox" 
+		else if ((verOffset = nAgt.indexOf("Firefox")) != -1) {
+			browserName = "Firefox";
+			fullVersion = nAgt.substring(verOffset + 8);
+		}
+		// In most other browsers, "name/version" is at the end of userAgent 
+		else if ((nameOffset = nAgt.lastIndexOf(' ') + 1) < (verOffset = nAgt
+				.lastIndexOf('/'))) {
+			browserName = nAgt.substring(nameOffset, verOffset);
+			fullVersion = nAgt.substring(verOffset + 1);
+			if (browserName.toLowerCase() == browserName.toUpperCase()) {
+				browserName = navigator.appName;
+			}
+		}
+		// trim the fullVersion string at semicolon/space if present
+		if ((ix = fullVersion.indexOf(";")) != -1)
+			fullVersion = fullVersion.substring(0, ix);
+		if ((ix = fullVersion.indexOf(" ")) != -1)
+			fullVersion = fullVersion.substring(0, ix);
+
+		majorVersion = parseInt('' + fullVersion, 10);
+		if (isNaN(majorVersion)) {
+			fullVersion = '' + parseFloat(navigator.appVersion);
+			majorVersion = parseInt(navigator.appVersion, 10);
+		}
+		return browserName;
+	}
+
+	var browserName = getBrowserName();
+
+	if (String(browserName).valueOf() != "Safari"
+			&& String(browserName).valueOf() != "Chrome") {
+		window.alert("Browser not supported. Please use Safari or Chrome.");
+		$(document)
+				.ready(
+						function() {
+							if (String(browserName).valueOf() != "Safari"
+									&& String(browserName).valueOf() != "Chrome")
+								document.body.innerHTML = "Browser not supported. Please use Safari or Chrome.";
+						});
+
+	} else {
+		//check if popup is allowed
+		$(document)
+				.ready(
+						function() {
+							//	var popup = window.open("");
+							var popup = window.open("", "", "width=50,height=50");
+							if (!popup
+									|| popup.closed
+									|| typeof popup.closed == 'undefined'
+									|| popup.outerWidth === 0
+									|| popup.outerHeight === 0){
+									
+								document.body.innerHTML = "Please turn off pop up blocker in your browser and try again.";
+							} else {
+								popup.close();
+							}
+							/*setTimeout(
+									function() {
+										if (!popup
+												|| popup.closed
+												|| typeof popup.closed == 'undefined'
+												|| popup.outerWidth === 0
+												|| popup.outerHeight === 0){
+												//|| popup.document.documentElement.clientWidth != 50
+												//|| parseInt($(popup).width()) != 50 ){
+												//|| parseInt($(popup).height()) != 200) {
+											//if (!popup || popup.closed || typeof popup.closed == 'undefined'
+											//	|| parseInt(popup.outerWidth) == 0) {
+											//window.alert()
+											//window.alert(parseInt($(popup).height()) == 200);
+											document.body.innerHTML = "Please turn off pop up blocker in your browser and try again.";
+										} else {
+											popup.close();
+										}
+									}, 0);*/
+						});
+	}
+</script>
+</head>
+<body>
+	<div class="topbar">
+		<div class="fill">
+			<div class="container">
+				<a class="brand" href="#">Interactive Document Labeling</a>
+			</div>
+		</div>
+	</div>
+	<div class="container">
+
+		<div class="content">
+			<!--div class="page-header">
+	          <h1>Page name <small>Supporting text or tagline</small></h1>
+	        </div-->
+			<div class="row">
+				<div class="span16">
+					<h2>New Document Labeling Session</h2>
+
+					<form name="new_session_form" method="GET" action="ui.html">
+
+						<div class="clearfix">
+							<label for="username">ID</label>
+							<div class="input">
+								<input class="xlarge" id="username" name="username" size="30"
+									type="text" />
+							</div>
+						</div>
+						
+						<div class="clearfix">
+							<label for="studycondition">Study Condition</label>
+							<div class="input">
+								<select name="studycondition" id="studycondition">
+									<option value="LR">LR</option>
+									<option value="LA">LA</option>
+									<option value="TR">TR</option>
+									<option value="TA">ALTO (TA)</option>
+								</select>
+							</div>
+						</div>
+						<div class="actions">
+							<input id="start-new-session" type="submit"
+								class="btn large primary" value="Start">
+						</div>
+						</fieldset>
+					</form>
+				</div>
+			</div>
+
+
+			<footer id="footer">
+				<p>&copy; This is just a test 2015</p>
+			</footer>
+		</div>
+	</div>
+
+</body>
+</html>
