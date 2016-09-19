@@ -35,7 +35,7 @@ Please try the synthetic data first:
 
 - Start using ALTO (see next step)
 
-- Stop the server: `$TOMCAT/catalina.sh stop`
+- Stop the server: `$TOMCAT/bin/catalina.sh stop`
 
 ### Try ALTO:
 check the ALTO paper in ACL 2016 for details about this interface
